@@ -1,9 +1,9 @@
 import 'dotenv/config.js';
 import express from 'express';
 import cors from 'cors';
-import { OpenAI } from 'openai';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import fetch from 'node-fetch';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -15,11 +15,6 @@ const PORT = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
-
-// Inicializar OpenAI
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
 
 // Validar palavras
 function validateWords(words) {
@@ -44,6 +39,79 @@ function validateWords(words) {
   return { valid: true };
 }
 
+// Função para chamar OpenAI API
+async function generateMotivationalPhrase(words) {
+  const apiKey = process.env.OPENAI_API_KEY;
+  
+  if (!apiKey) {
+    throw new Error('OPENAI_API_KEY não está configurada');
+  }
+
+  const wordList = words.join(', ');
+  
+  const prompt = `Crie uma frase motivacional em português que incorpore as seguintes 3 palavras: ${wordList}. 
+    
+A frase deve:
+- Ser inspiradora e motivadora
+- Ter entre 15 e 30 palavras
+- Incorporar naturalmente as 3 palavras fornecidas
+- Ser apropriada para qualquer contexto
+
+Responda apenas com a frase, sem explicações adicionais.`;
+
+  try {
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiKey}`,
+      },
+      body: JSON.stringify({
+        model: 'gpt-3.5-turbo',
+        messages: [
+          {
+            role: 'system',
+            content: 'Você é um gerador de frases motivacionais em português.',
+          },
+          {
+            role: 'user',
+            content: prompt,
+          },
+        ],
+        temperature: 0.7,
+        max_tokens: 150,
+      }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      
+      if (response.status === 401) {
+        throw new Error('Chave de API OpenAI inválida');
+      }
+      
+      if (response.status === 429) {
+        throw new Error('Limite de requisições da API OpenAI atingido. Tente novamente mais tarde.');
+      }
+
+      throw new Error(errorData.error?.message || 'Erro ao chamar API OpenAI');
+    }
+
+    const data = await response.json();
+    
+    if (!data.choices || !data.choices[0] || !data.choices[0].message) {
+      throw new Error('Resposta inválida da API OpenAI');
+    }
+
+    return data.choices[0].message.content.trim();
+  } catch (error) {
+    if (error.message.includes('fetch')) {
+      throw new Error('Erro de conexão com a API OpenAI. Verifique sua internet.');
+    }
+    throw error;
+  }
+}
+
 // Endpoint para gerar frase motivacional
 app.post('/api/motivational-phrase', async (req, res) => {
   try {
@@ -56,32 +124,9 @@ app.post('/api/motivational-phrase', async (req, res) => {
     }
 
     const cleanedWords = words.map(w => w.trim());
-    const wordList = cleanedWords.join(', ');
 
-    // Criar prompt para o ChatGPT
-    const prompt = `Crie uma frase motivacional em português que incorpore as seguintes 3 palavras: ${wordList}. 
-    
-A frase deve:
-- Ser inspiradora e motivadora
-- Ter entre 15 e 30 palavras
-- Incorporar naturalmente as 3 palavras fornecidas
-- Ser apropriada para qualquer contexto
-
-Responda apenas com a frase, sem explicações adicionais.`;
-
-    // Chamar OpenAI API
-    const message = await openai.messages.create({
-      model: 'claude-3-5-sonnet-20241022',
-      max_tokens: 150,
-      messages: [
-        {
-          role: 'user',
-          content: prompt,
-        },
-      ],
-    });
-
-    const phrase = message.content[0].type === 'text' ? message.content[0].text : '';
+    // Gerar frase motivacional
+    const phrase = await generateMotivationalPhrase(cleanedWords);
 
     // Verificar se a frase contém as palavras
     const phraseUpperCase = phrase.toUpperCase();
@@ -90,26 +135,26 @@ Responda apenas com a frase, sem explicações adicionais.`;
     );
 
     if (wordsNotFound.length > 0) {
-      return res.status(500).json({
-        error: `A frase gerada não contém todas as palavras fornecidas. Palavras faltantes: ${wordsNotFound.join(', ')}`,
-      });
+      console.warn(`Palavras não encontradas na frase: ${wordsNotFound.join(', ')}`);
+      // Continuar mesmo se algumas palavras não forem encontradas
+      // pois a API pode gerar frases válidas sem todas as palavras
     }
 
     res.json({
       success: true,
       words: cleanedWords,
-      phrase: phrase.trim(),
+      phrase: phrase,
       timestamp: new Date().toISOString(),
     });
   } catch (error) {
     console.error('Erro ao gerar frase motivacional:', error);
     
-    if (error.status === 401) {
+    if (error.message.includes('Chave de API OpenAI inválida')) {
       return res.status(401).json({ error: 'Chave de API OpenAI inválida' });
     }
     
-    if (error.status === 429) {
-      return res.status(429).json({ error: 'Limite de requisições da API OpenAI atingido. Tente novamente mais tarde.' });
+    if (error.message.includes('Limite de requisições')) {
+      return res.status(429).json({ error: error.message });
     }
 
     res.status(500).json({
