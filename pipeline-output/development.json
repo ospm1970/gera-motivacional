@@ -1,0 +1,22 @@
+{
+  "status": "completed",
+  "result": {
+    "code": "import express from 'express';\nimport cors from 'cors';\nimport helmet from 'helmet';\nimport rateLimit from 'express-rate-limit';\nimport satiricalGenerator from './satiricalGenerator.js';\nimport { body, validationResult } from 'express-validator';\nimport sanitizeHtml from 'sanitize-html';\n\nconst app = express();\napp.use(helmet());\napp.use(cors());\napp.use(express.json());\n\n// Rate limiter to protect API\nconst limiter = rateLimit({\n  windowMs: 60 * 1000, // 1 minute\n  max: 30,\n  message: { error: 'Too many requests, please try again later.' }\n});\napp.use(limiter);\n\n// Simple motivational phrase generator\nfunction generateMotivationalPhrase(words) {\n  return `Keep pushing forward with ${words.join(', ')}!`;\n}\n\n// POST /api/motivational-phrase\napp.post(\n  '/api/motivational-phrase',\n  [\n    body('words')\n      .isArray({ min: 3, max: 3 })\n      .withMessage('Exactly three words are required.')\n      .custom((arr) => arr.every(w => typeof w === 'string' && w.trim().length > 0))\n      .withMessage('Words must be non-empty strings.')\n  ],\n  async (req, res) => {\n    // Validate input\n    const errors = validationResult(req);\n    if (!errors.isEmpty()) {\n      return res.status(400).json({ error: errors.array()[0].msg });\n    }\n\n    // Sanitize inputs\n    const rawWords = req.body.words;\n    const words = rawWords.map(w => sanitizeHtml(w.trim()));\n\n    // Generate motivational phrase\n    const motivationalPhrase = generateMotivationalPhrase(words);\n\n    // Generate satirical phrase asynchronously with timeout and error handling\n    let satiricalPhrase = '';\n    try {\n      satiricalPhrase = await Promise.race([\n        satiricalGenerator.generateSatiricalPhrase(words),\n        new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 1900))\n      ]);\n    } catch (err) {\n      satiricalPhrase = 'Satirical phrase currently unavailable.';\n    }\n\n    // Sanitize output\n    const safeMotivational = sanitizeHtml(motivationalPhrase);\n    const safeSatirical = sanitizeHtml(satiricalPhrase);\n\n    return res.json({\n      motivationalPhrase: safeMotivational,\n      satiricalPhrase: safeSatirical\n    });\n  }\n);\n\n// Serve frontend\napp.use(express.static('public'));\n\n// Start server\nconst PORT = process.env.PORT || 3000;\napp.listen(PORT, () => {\n  console.log(`Server running on port ${PORT}`);\n});\n\n// satiricalGenerator.js\n// This module handles satirical phrase generation using ChatGPT API\nimport OpenAI from 'openai';\nimport sanitizeHtml from 'sanitize-html';\n\nconst openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });\n\nasync function generateSatiricalPhrase(words) {\n  const prompt = `Generate a satirical phrase using these three words: ${words.join(', ')}. The tone should be clearly satirical but respectful.`;\n  const response = await openai.chat.completions.create({\n    model: 'gpt-4o-mini',\n    messages: [{ role: 'user', content: prompt }],\n    max_tokens: 60,\n    temperature: 0.7\n  });\n\n  if (!response.choices || response.choices.length === 0) {\n    throw new Error('Invalid response from ChatGPT');\n  }\n\n  const phrase = response.choices[0].message.content.trim();\n  return sanitizeHtml(phrase);\n}\n\nexport default { generateSatiricalPhrase };",
+    "language": "javascript",
+    "functions": [
+      "generateMotivationalPhrase",
+      "generateSatiricalPhrase"
+    ],
+    "dependencies": [
+      "express",
+      "cors",
+      "helmet",
+      "express-rate-limit",
+      "express-validator",
+      "sanitize-html",
+      "openai"
+    ],
+    "code_quality_score": 90
+  },
+  "duration": "13582ms"
+}

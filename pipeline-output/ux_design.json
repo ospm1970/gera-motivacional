@@ -1,0 +1,87 @@
+{
+  "status": "completed",
+  "result": {
+    "status": "completed",
+    "design_specifications": {
+      "user_journey": {
+        "personas": [
+          "Motivated Maria – a user seeking positive motivation with a playful twist, values clear distinction between tones and quick feedback.",
+          "Developer Daniel – backend developer responsible for API integration, focusing on asynchronous calls, error handling, and security.",
+          "Maintainer Marta – system maintainer focused on modularity and ease of maintenance."
+        ],
+        "key_flows": [
+          "User inputs three words → system validates inputs → system generates motivational phrase and satirical phrase asynchronously → phrases displayed side-by-side → user reads phrases with clear tone distinction.",
+          "Developer triggers POST /api/motivational-phrase with three words → backend validates input → calls ChatGPT API asynchronously to generate satirical phrase → handles errors gracefully → returns both phrases in response.",
+          "Maintainer updates satirical phrase generation module independently without affecting motivational phrase logic."
+        ],
+        "friction_points": [
+          "User entering invalid or malicious input causing validation errors or security risks.",
+          "Delay in satirical phrase generation causing increased response time and poor user experience.",
+          "User confusion due to insufficient visual distinction between motivational and satirical phrases.",
+          "Error in satirical phrase generation causing loss of satirical phrase without informing user."
+        ]
+      },
+      "information_architecture": {
+        "hierarchy": "Primary focus on input form for three words at top, followed immediately by side-by-side display of motivational and satirical phrases. Error messages and status indicators appear near input area to provide immediate feedback.",
+        "navigation": [
+          "Home – main page with input and generated phrases",
+          "About – explanation of app purpose",
+          "Help/FAQ – guidance on input rules and error handling",
+          "Settings (optional) – manage API keys or preferences for maintainers/developers"
+        ],
+        "categorization": [
+          "User Input – the three words input form",
+          "Generated Content – motivational phrase and satirical phrase",
+          "System Feedback – validation errors, API status messages, loading states"
+        ]
+      },
+      "layout_structure": {
+        "type": "two-column layout",
+        "components": [
+          "Input form with three validated text inputs and Submit button",
+          "Left column: Motivational phrase display area",
+          "Right column: Satirical phrase display area",
+          "Error message area below inputs",
+          "Loading indicator near Submit button"
+        ],
+        "responsive": {
+          "mobile": "Stacked vertical layout: input form on top, motivational phrase below, satirical phrase below motivational phrase, each full width with spacing to separate clearly.",
+          "tablet": "Two-column layout with motivational and satirical phrases side-by-side beneath input form, input form full width above columns.",
+          "desktop": "Two-column layout with input form spanning top full width, beneath which motivational phrase on left and satirical phrase on right with equal width and aligned vertically."
+        }
+      },
+      "design_system": {
+        "typography": "Primary font: Sans-serif (e.g., Inter or Roboto) with sizes ranging from 16px (body) to 24px (headings). Use font-weight 600 for phrase titles. Line-height 1.5 for readability.",
+        "colors": "Color palette includes: primary blue (#1a73e8) for buttons and highlights, green (#2e7d32) for motivational phrase text, red/orange (#d84315) for satirical phrase text, neutral greys (#f5f5f5 background, #333 text), error red (#b00020) for validation and API errors.",
+        "spacing": "Base spacing scale increments of 8px: small (8px), medium (16px), large (24px), extra large (32px). Consistent padding inside input fields and phrase containers, margin between columns and sections.",
+        "components": [
+          "Validated input fields with inline error states",
+          "Primary call-to-action button with hover and disabled states",
+          "Phrase display cards with distinct background and border colors for motivational vs satirical",
+          "Loading spinner component",
+          "Accessible error message banners"
+        ]
+      },
+      "accessibility": {
+        "wcag_level": "AA",
+        "keyboard_nav": "All interactive elements (inputs, buttons) must be reachable and operable via keyboard in logical tab order. Visible focus indicators on all focusable elements.",
+        "screen_reader": "Use semantic HTML and ARIA roles where appropriate. Provide clear labels for inputs and status messages. Announce error messages and loading states dynamically using ARIA live regions.",
+        "contrast_ratio": "Minimum 4.5:1 contrast ratio for text against background, including motivational and satirical phrase text colors ensuring readability."
+      },
+      "interactions": {
+        "states": [
+          "default: normal input and button appearance",
+          "hover: button background darkens, pointer cursor",
+          "active: button pressed visual feedback",
+          "disabled: button and inputs visibly disabled with muted colors",
+          "error: input border and error message in red, error icon appears"
+        ],
+        "animations": "Subtle fade-in transition for generated phrases on load (duration ~300ms). Button hover and focus transitions smooth over 150ms. Loading spinner rotates continuously.",
+        "loading_state": "After submission, disable input and submit button, show spinner next to button and a subtle message 'Generating phrases...'. Loading state announced to screen readers.",
+        "empty_state": "Before submission or after error, motivational and satirical phrase areas show placeholder text 'Your phrases will appear here' in muted grey italic font."
+      }
+    },
+    "timestamp": "2026-04-10T22:33:05.300Z"
+  },
+  "duration": "14000ms"
+}

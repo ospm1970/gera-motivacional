@@ -1,0 +1,38 @@
+{
+  "requirement": "Acrescentar na tela ao lado da frase motivacional gerada uma frase em tom satírico baseada nas mesmas 3 palavras também usando o chatgpt",
+  "status": "completed",
+  "createdAt": "2026-04-10T22:31:17.548Z",
+  "completedAt": "2026-04-10T22:34:43.658Z",
+  "stages": [
+    {
+      "name": "specification",
+      "status": "completed",
+      "duration": "38719ms"
+    },
+    {
+      "name": "analysis",
+      "status": "completed",
+      "duration": "10674ms"
+    },
+    {
+      "name": "ux_design",
+      "status": "completed",
+      "duration": "14000ms"
+    },
+    {
+      "name": "development",
+      "status": "completed",
+      "duration": "13582ms"
+    },
+    {
+      "name": "qa",
+      "status": "completed",
+      "duration": "6939ms"
+    },
+    {
+      "name": "deployment",
+      "status": "completed",
+      "duration": "4117ms"
+    }
+  ]
+}
