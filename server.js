@@ -1,9 +1,13 @@
 import 'dotenv/config.js';
 import express from 'express';
 import cors from 'cors';
+import helmet from 'helmet';
+import rateLimit from 'express-rate-limit';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import fetch from 'node-fetch';
+import { body, validationResult } from 'express-validator';
+import sanitizeHtml from 'sanitize-html';
+import satiricalGenerator from './satiricalGenerator.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -11,53 +15,46 @@ const __dirname = path.dirname(__filename);
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Middleware
-app.use(cors());
-app.use(express.json());
+// ==========================================
+// MIDDLEWARES DE SEGURANÇA E CONFIGURAÇÃO
+// ==========================================
+app.use(helmet());
+app.use(cors({
+  origin: process.env.NODE_ENV === 'production' ? 'https://seudominio.com' : '*',
+  methods: ['GET', 'POST']
+}));
+app.use(express.json({ limit: '10kb' }));
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Validar palavras
-function validateWords(words) {
-  if (!Array.isArray(words) || words.length !== 3) {
-    return { valid: false, error: 'Deve fornecer exatamente 3 palavras' };
-  }
+// ==========================================
+// RATE LIMITING
+// ==========================================
+const limiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 30,
+  message: { error: 'Muitas requisições. Tente novamente mais tarde.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+app.use('/api/', limiter);
 
-  for (let i = 0; i < words.length; i++) {
-    const word = words[i];
-    
-    if (typeof word !== 'string' || word.trim().length === 0) {
-      return { valid: false, error: `Palavra ${i + 1} é inválida ou vazia` };
-    }
-
-    // Validar se contém apenas letras (português)
-    const portugueseWordRegex = /^[a-záàâãéèêíïóôõöúçñ\s-]+$/i;
-    if (!portugueseWordRegex.test(word.trim())) {
-      return { valid: false, error: `Palavra "${word}" contém caracteres inválidos. Use apenas letras portuguesas.` };
-    }
-  }
-
-  return { valid: true };
-}
-
-// Função para chamar OpenAI API
+// ==========================================
+// FUNÇÕES AUXILIARES
+// ==========================================
 async function generateMotivationalPhrase(words) {
   const apiKey = process.env.OPENAI_API_KEY;
   
   if (!apiKey) {
-    throw new Error('OPENAI_API_KEY não está configurada');
+    throw new Error('OPENAI_API_KEY não configurada');
   }
 
-  const wordList = words.join(', ');
-  
-  const prompt = `Crie uma frase motivacional em português que incorpore as seguintes 3 palavras: ${wordList}. 
-    
+  const prompt = `Crie uma frase motivacional em português que incorpore as seguintes 3 palavras: ${words.join(', ')}. 
 A frase deve:
 - Ser inspiradora e motivadora
 - Ter entre 15 e 30 palavras
-- Incorporar naturalmente as 3 palavras fornecidas
+- Incorporar naturalmente as 3 palavras
 - Ser apropriada para qualquer contexto
-
-Responda apenas com a frase, sem explicações adicionais.`;
+Responda apenas com a frase.`;
 
   try {
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -69,14 +66,8 @@ Responda apenas com a frase, sem explicações adicionais.`;
       body: JSON.stringify({
         model: 'gpt-3.5-turbo',
         messages: [
-          {
-            role: 'system',
-            content: 'Você é um gerador de frases motivacionais em português.',
-          },
-          {
-            role: 'user',
-            content: prompt,
-          },
+          { role: 'system', content: 'Você é um gerador de frases motivacionais em português.' },
+          { role: 'user', content: prompt },
         ],
         temperature: 0.7,
         max_tokens: 150,
@@ -84,340 +75,91 @@ Responda apenas com a frase, sem explicações adicionais.`;
     });
 
     if (!response.ok) {
-      const errorData = await response.json();
-      
-      if (response.status === 401) {
-        throw new Error('Chave de API OpenAI inválida');
-      }
-      
-      if (response.status === 429) {
-        throw new Error('Limite de requisições da API OpenAI atingido. Tente novamente mais tarde.');
-      }
-
-      throw new Error(errorData.error?.message || 'Erro ao chamar API OpenAI');
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.error?.message || `Erro da API: ${response.status}`);
     }
 
     const data = await response.json();
-    
-    if (!data.choices || !data.choices[0] || !data.choices[0].message) {
-      throw new Error('Resposta inválida da API OpenAI');
-    }
-
     return data.choices[0].message.content.trim();
   } catch (error) {
-    if (error.message.includes('fetch')) {
-      throw new Error('Erro de conexão com a API OpenAI. Verifique sua internet.');
-    }
-    throw error;
+    console.error('[OpenAI Error]:', error.message);
+    throw new Error('Falha ao gerar frase motivacional.');
   }
 }
 
-// Endpoint para gerar frase motivacional
-app.post('/api/motivational-phrase', async (req, res) => {
-  try {
-    const { words } = req.body;
+// ==========================================
+// ENDPOINTS
+// ==========================================
 
-    // Validar entrada
-    const validation = validateWords(words);
-    if (!validation.valid) {
-      return res.status(400).json({ error: validation.error });
-    }
-
-    const cleanedWords = words.map(w => w.trim());
-
-    // Gerar frase motivacional
-    const phrase = await generateMotivationalPhrase(cleanedWords);
-
-    // Verificar se a frase contém as palavras
-    const phraseUpperCase = phrase.toUpperCase();
-    const wordsNotFound = cleanedWords.filter(
-      word => !phraseUpperCase.includes(word.toUpperCase())
-    );
-
-    if (wordsNotFound.length > 0) {
-      console.warn(`Palavras não encontradas na frase: ${wordsNotFound.join(', ')}`);
-      // Continuar mesmo se algumas palavras não forem encontradas
-      // pois a API pode gerar frases válidas sem todas as palavras
-    }
-
-    res.json({
-      success: true,
-      words: cleanedWords,
-      phrase: phrase,
-      timestamp: new Date().toISOString(),
-    });
-  } catch (error) {
-    console.error('Erro ao gerar frase motivacional:', error);
-    
-    if (error.message.includes('Chave de API OpenAI inválida')) {
-      return res.status(401).json({ error: 'Chave de API OpenAI inválida' });
-    }
-    
-    if (error.message.includes('Limite de requisições')) {
-      return res.status(429).json({ error: error.message });
-    }
-
-    res.status(500).json({
-      error: 'Erro ao gerar frase motivacional. Tente novamente mais tarde.',
-      details: process.env.NODE_ENV === 'development' ? error.message : undefined,
-    });
-  }
-});
-
-// Endpoint de health check
-app.get('/health', (req, res) => {
-  res.json({ status: 'ok', timestamp: new Date().toISOString() });
-});
-
-// Servir página inicial
-app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));
-});
-
-// Iniciar servidor
-app.listen(PORT, () => {
-  console.log(`🚀 Gerador de Frases Motivacionais`);
-  console.log(`📍 Rodando em http://localhost:${PORT}`);
-  console.log(`🔑 OpenAI API Key: ${process.env.OPENAI_API_KEY ? 'Configurada' : 'NÃO CONFIGURADA'}`);
-});
-
-
-import express from 'express';
-import cors from 'cors';
-import helmet from 'helmet';
-import rateLimit from 'express-rate-limit';
-import satiricalGenerator from './satiricalGenerator.js';
-import { body, validationResult } from 'express-validator';
-import sanitizeHtml from 'sanitize-html';
-
-const app = express();
-app.use(helmet());
-app.use(cors());
-app.use(express.json());
-
-// Rate limiter to protect API
-const limiter = rateLimit({
-  windowMs: 60 * 1000, // 1 minute
-  max: 30,
-  message: { error: 'Too many requests, please try again later.' }
-});
-app.use(limiter);
-
-// Simple motivational phrase generator
-function generateMotivationalPhrase(words) {
-  return `Keep pushing forward with ${words.join(', ')}!`;
-}
-
-// POST /api/motivational-phrase
+// ✅ ENDPOINT CORRIGIDO: /api/phrases (não /api/motivational-phrase)
 app.post(
-  '/api/motivational-phrase',
+  '/api/phrases',
   [
     body('words')
-      .isArray({ min: 3, max: 3 })
-      .withMessage('Exactly three words are required.')
+      .isArray({ min: 3, max: 3 }).withMessage('Exatamente 3 palavras são obrigatórias.')
       .custom((arr) => arr.every(w => typeof w === 'string' && w.trim().length > 0))
-      .withMessage('Words must be non-empty strings.')
+      .withMessage('As palavras não podem estar vazias.')
+      .custom((arr) => arr.every(w => /^[a-záàâãéèêíïóôõöúçñ\s-]+$/i.test(w.trim())))
+      .withMessage('As palavras devem conter apenas letras (português).')
   ],
   async (req, res) => {
-    // Validate input
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(400).json({ error: errors.array()[0].msg });
     }
 
-    // Sanitize inputs
-    const rawWords = req.body.words;
-    const words = rawWords.map(w => sanitizeHtml(w.trim()));
-
-    // Generate motivational phrase
-    const motivationalPhrase = generateMotivationalPhrase(words);
-
-    // Generate satirical phrase asynchronously with timeout and error handling
-    let satiricalPhrase = '';
     try {
-      satiricalPhrase = await Promise.race([
-        satiricalGenerator.generateSatiricalPhrase(words),
-        new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 1900))
+      const words = req.body.words.map(w => sanitizeHtml(w.trim()));
+
+      const [motivationalResult, satiricalResult] = await Promise.allSettled([
+        generateMotivationalPhrase(words),
+        Promise.race([
+          satiricalGenerator.generateSatiricalPhrase(words),
+          new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout na frase satírica')), 5000))
+        ])
       ]);
-    } catch (err) {
-      satiricalPhrase = 'Satirical phrase currently unavailable.';
+
+      const motivationalPhrase = motivationalResult.status === 'fulfilled' 
+        ? sanitizeHtml(motivationalResult.value) 
+        : 'Frase motivacional indisponível no momento.';
+
+      const satiricalPhrase = satiricalResult.status === 'fulfilled' 
+        ? sanitizeHtml(satiricalResult.value) 
+        : 'Frase satírica indisponível no momento.';
+
+      // ✅ RESPOSTA CORRIGIDA: retorna motivationalPhrase (não phrase)
+      return res.json({
+        success: true,
+        words,
+        motivationalPhrase,
+        satiricalPhrase,
+        timestamp: new Date().toISOString()
+      });
+
+    } catch (error) {
+      console.error('[API Error]:', error);
+      res.status(500).json({ error: 'Erro interno do servidor.' });
     }
-
-    // Sanitize output
-    const safeMotivational = sanitizeHtml(motivationalPhrase);
-    const safeSatirical = sanitizeHtml(satiricalPhrase);
-
-    return res.json({
-      motivationalPhrase: safeMotivational,
-      satiricalPhrase: safeSatirical
-    });
   }
 );
 
-// Serve frontend
-app.use(express.static('public'));
-
-// Start server
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+// Health check
+app.get('/health', (req, res) => {
+  res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
-// satiricalGenerator.js
-// This module handles satirical phrase generation using ChatGPT API
-import OpenAI from 'openai';
-import sanitizeHtml from 'sanitize-html';
+// Fallback para SPA (React)
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
 
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
-
-async function generateSatiricalPhrase(words) {
-  const prompt = `Generate a satirical phrase using these three words: ${words.join(', ')}. The tone should be clearly satirical but respectful.`;
-  const response = await openai.chat.completions.create({
-    model: 'gpt-4o-mini',
-    messages: [{ role: 'user', content: prompt }],
-    max_tokens: 60,
-    temperature: 0.7
-  });
-
-  if (!response.choices || response.choices.length === 0) {
-    throw new Error('Invalid response from ChatGPT');
+// ==========================================
+// INICIALIZAÇÃO
+// ==========================================
+app.listen(PORT, () => {
+  console.log(`🚀 Servidor rodando na porta ${PORT}`);
+  console.log(`🛡️  Ambiente: ${process.env.NODE_ENV || 'development'}`);
+  if (!process.env.OPENAI_API_KEY) {
+    console.warn('⚠️  AVISO: OPENAI_API_KEY não está configurada!');
   }
-
-  const phrase = response.choices[0].message.content.trim();
-  return sanitizeHtml(phrase);
-}
-
-
-import React, { useEffect, useState } from 'react';
-import PropTypes from 'prop-types';
-import './MotivationalSatirical.css';
-
-// Reusable Phrase component
-function Phrase({ title, text, className }) {
-  return (
-    <div className={`phrase-container ${className}`} role="region" aria-label={title}>
-      <h2 className="phrase-title">{title}</h2>
-      <p className="phrase-text">{text}</p>
-    </div>
-  );
-}
-
-Phrase.propTypes = {
-  title: PropTypes.string.isRequired,
-  text: PropTypes.string.isRequired,
-  className: PropTypes.string
-};
-
-Phrase.defaultProps = {
-  className: ''
-};
-
-// Main component that fetches and displays both phrases side by side
-export default function MotivationalSatirical() {
-  const [motivational, setMotivational] = useState('');
-  const [satirical, setSatirical] = useState('');
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-
-  useEffect(() => {
-    let isMounted = true;
-    async function fetchPhrases() {
-      try {
-        // Fetch motivational phrase
-        const motivationalResponse = await fetch('/api/phrases/motivational');
-        const motivationalData = await motivationalResponse.json();
-
-        // Fetch satirical phrase
-        const satiricalResponse = await fetch('/api/phrases/satirical');
-        const satiricalData = await satiricalResponse.json();
-
-        if (isMounted) {
-          setMotivational(motivationalData.phrase || '');
-          setSatirical(satiricalData.phrase || '');
-          setLoading(false);
-        }
-      } catch (err) {
-        if (isMounted) {
-          setError('Erro ao carregar as frases.');
-          setLoading(false);
-        }
-      }
-    }
-    fetchPhrases();
-    return () => {
-      isMounted = false;
-    };
-  }, []);
-
-  if (loading) {
-    return <div className="loading" aria-live="polite">Carregando frases...</div>;
-  }
-
-  if (error) {
-    return <div className="error" role="alert">{error}</div>;
-  }
-
-  return (
-    <main className="phrases-wrapper" aria-label="Frases motivacional e satírica">
-      <Phrase title="Frase Motivacional" text={motivational} className="motivational" />
-      <Phrase title="Frase Satírica" text={satirical} className="satirical" />
-    </main>
-  );
-}
-
-// CSS (MotivationalSatirical.css)
-/*
-.phrases-wrapper {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 1rem;
-  justify-content: center;
-  padding: 1rem;
-}
-.phrase-container {
-  flex: 1 1 45%;
-  box-sizing: border-box;
-  padding: 1rem;
-  border-radius: 8px;
-  background-color: #f9f9f9;
-  min-width: 280px;
-  max-width: 600px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-}
-.phrase-title {
-  font-size: 1.5rem;
-  margin-bottom: 0.5rem;
-}
-.phrase-text {
-  font-size: 1.2rem;
-  line-height: 1.4;
-}
-.motivational {
-  border: 2px solid #4caf50;
-  background-color: #e8f5e9;
-  color: #2e7d32;
-}
-.satirical {
-  border: 2px solid #f44336;
-  background-color: #ffebee;
-  color: #c62828;
-}
-.loading, .error {
-  text-align: center;
-  font-size: 1.2rem;
-  margin-top: 2rem;
-}
-
-@media (max-width: 768px) {
-  .phrases-wrapper {
-    flex-direction: column;
-    align-items: center;
-  }
-  .phrase-container {
-    flex: 1 1 90%;
-    max-width: none;
-  }
-}
-*/
-
-export default { generateSatiricalPhrase };
+});

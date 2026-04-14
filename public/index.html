@@ -4,31 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Gerador de Frases Motivacionais</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <style>
-    @keyframes fadeIn {
-      from {
-        opacity: 0;
-        transform: translateY(10px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-
-    .fade-in {
-      animation: fadeIn 0.3s ease-in-out;
-    }
-
-    .gradient-bg {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    }
-
-    .card-shadow {
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-    }
-  </style>
+  <link rel="stylesheet" href="/styles.css">
 </head>
 <body class="bg-gray-50">
   <div class="min-h-screen gradient-bg flex items-center justify-center p-4">
@@ -111,9 +87,19 @@
             <div id="wordsDisplay" class="flex flex-wrap gap-2"></div>
           </div>
 
-          <div class="bg-gradient-to-r from-purple-50 to-purple-100 rounded-lg p-6 border-2 border-purple-200">
-            <h2 class="text-gray-700 font-semibold text-sm mb-3">SUA FRASE MOTIVACIONAL:</h2>
-            <p id="phraseDisplay" class="text-2xl font-bold text-purple-900 leading-relaxed"></p>
+          <!-- Container com duas frases lado a lado -->
+          <div class="flex gap-4 flex-wrap">
+            <!-- Frase Motivacional -->
+            <div class="flex-1 min-w-xs bg-gradient-to-r from-green-50 to-green-100 rounded-lg p-6 border-2 border-green-300">
+              <h2 class="text-gray-700 font-semibold text-sm mb-3">🌟 FRASE MOTIVACIONAL:</h2>
+              <p id="phraseDisplay" class="text-lg font-bold text-green-900 leading-relaxed"></p>
+            </div>
+
+            <!-- Frase Satírica -->
+            <div class="flex-1 min-w-xs bg-gradient-to-r from-red-50 to-red-100 rounded-lg p-6 border-2 border-red-300">
+              <h2 class="text-gray-700 font-semibold text-sm mb-3">😏 FRASE SATÍRICA:</h2>
+              <p id="satiricalDisplay" class="text-lg font-bold text-red-900 leading-relaxed"></p>
+            </div>
           </div>
 
           <div class="mt-4 text-center">
@@ -137,134 +123,7 @@
     </div>
   </div>
 
-  <script>
-    const form = document.getElementById('motivationalForm');
-    const word1Input = document.getElementById('word1');
-    const word2Input = document.getElementById('word2');
-    const word3Input = document.getElementById('word3');
-    const submitBtn = document.getElementById('submitBtn');
-    const resetBtn = document.getElementById('resetBtn');
-    const errorMessage = document.getElementById('errorMessage');
-    const errorText = document.getElementById('errorText');
-    const resultContainer = document.getElementById('resultContainer');
-    const loadingContainer = document.getElementById('loadingContainer');
-    const phraseDisplay = document.getElementById('phraseDisplay');
-    const wordsDisplay = document.getElementById('wordsDisplay');
-    const timestamp = document.getElementById('timestamp');
-    const submitText = document.getElementById('submitText');
-    const spinner = document.getElementById('spinner');
-
-    // Validar entrada
-    function validateInput(word) {
-      if (!word || word.trim().length === 0) {
-        return false;
-      }
-      const portugueseWordRegex = /^[a-záàâãéèêíïóôõöúçñ\s-]+$/i;
-      return portugueseWordRegex.test(word.trim());
-    }
-
-    // Mostrar erro
-    function showError(message) {
-      errorText.textContent = message;
-      errorMessage.classList.remove('hidden');
-      resultContainer.classList.add('hidden');
-      loadingContainer.classList.add('hidden');
-    }
-
-    // Limpar erro
-    function clearError() {
-      errorMessage.classList.add('hidden');
-      errorText.textContent = '';
-    }
-
-    // Submeter formulário
-    form.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      clearError();
-
-      const word1 = word1Input.value.trim();
-      const word2 = word2Input.value.trim();
-      const word3 = word3Input.value.trim();
-
-      // Validar palavras
-      if (!validateInput(word1)) {
-        showError('Palavra 1 é inválida. Use apenas letras portuguesas.');
-        return;
-      }
-      if (!validateInput(word2)) {
-        showError('Palavra 2 é inválida. Use apenas letras portuguesas.');
-        return;
-      }
-      if (!validateInput(word3)) {
-        showError('Palavra 3 é inválida. Use apenas letras portuguesas.');
-        return;
-      }
-
-      // Mostrar loading
-      resultContainer.classList.add('hidden');
-      loadingContainer.classList.remove('hidden');
-      submitBtn.disabled = true;
-      resetBtn.disabled = true;
-      submitText.classList.add('hidden');
-      spinner.classList.remove('hidden');
-
-      try {
-        const response = await fetch('/api/motivational-phrase', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            words: [word1, word2, word3],
-          }),
-        });
-
-        const data = await response.json();
-
-        if (!response.ok) {
-          showError(data.error || 'Erro ao gerar frase motivacional');
-          loadingContainer.classList.add('hidden');
-          return;
-        }
-
-        // Exibir resultado
-        phraseDisplay.textContent = data.phrase;
-        
-        wordsDisplay.innerHTML = data.words
-          .map(
-            word =>
-              `<span class="bg-purple-200 text-purple-800 px-3 py-1 rounded-full text-sm font-semibold">${word}</span>`
-          )
-          .join('');
-
-        const date = new Date(data.timestamp);
-        timestamp.textContent = `Gerado em ${date.toLocaleString('pt-BR')}`;
-
-        resultContainer.classList.remove('hidden');
-        loadingContainer.classList.add('hidden');
-      } catch (error) {
-        console.error('Erro:', error);
-        showError('Erro de conexão. Verifique sua internet e tente novamente.');
-        loadingContainer.classList.add('hidden');
-      } finally {
-        submitBtn.disabled = false;
-        resetBtn.disabled = false;
-        submitText.classList.remove('hidden');
-        spinner.classList.add('hidden');
-      }
-    });
-
-    // Limpar formulário
-    resetBtn.addEventListener('click', () => {
-      form.reset();
-      resultContainer.classList.add('hidden');
-      loadingContainer.classList.add('hidden');
-      clearError();
-      word1Input.focus();
-    });
-
-    // Focus inicial
-    word1Input.focus();
-  </script>
+  <!-- Script separado (sem inline) -->
+  <script src="/app.js"></script>
 </body>
 </html>
