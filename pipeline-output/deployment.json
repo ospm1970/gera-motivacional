@@ -2,28 +2,23 @@
   "status": "completed",
   "result": {
     "deployment_steps": [
-      "Review and finalize code changes",
-      "Run unit and integration tests locally",
-      "Build Docker image with the updated code",
-      "Push Docker image to container registry",
-      "Deploy updated container to staging environment",
-      "Run automated health checks and manual smoke tests in staging",
-      "Verify environment variables including OPENAI_API_KEY are set correctly",
-      "Deploy container to production environment during low traffic window",
-      "Monitor logs and metrics for errors or performance issues",
-      "Confirm API endpoints respond correctly and rate limiting works as expected"
+      "Build the React application using the appropriate build tool (e.g., npm run build)",
+      "Run unit and integration tests to ensure code quality and functionality",
+      "Deploy the built static files to the production web server or CDN",
+      "Verify that the API endpoints /api/phrases/motivational and /api/phrases/satirical are accessible and returning expected data",
+      "Perform smoke tests on the production environment to confirm the UI loads and displays phrases correctly",
+      "Monitor application logs and performance metrics for any anomalies post-deployment"
     ],
     "environment": "production",
     "health_checks": [
-      "API endpoint /api/motivational-phrase returns 200 with valid response",
-      "Rate limiting enforces max 30 requests per minute",
-      "No errors in server logs related to OpenAI API calls",
-      "Frontend static files served correctly",
-      "Server process is running and listening on expected port"
+      "Check HTTP 200 response from /api/phrases/motivational",
+      "Check HTTP 200 response from /api/phrases/satirical",
+      "Verify UI renders both motivational and satirical phrases without errors",
+      "Confirm no loading or error messages are shown on the main component after data fetch"
     ],
-    "rollback_plan": "If critical errors or performance degradation are detected post-deployment, immediately revert to the previous stable Docker image version and redeploy. Notify the team and investigate the root cause before attempting redeployment.",
+    "rollback_plan": "If deployment causes errors or degraded user experience, revert to the previous stable build by redeploying the last known good build artifacts and verify the application functionality before resuming normal operations.",
     "estimated_deployment_time_minutes": 15,
     "deployment_approved": true
   },
-  "duration": "4117ms"
+  "duration": "3368ms"
 }
