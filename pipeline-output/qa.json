@@ -2,27 +2,34 @@
   "status": "completed",
   "result": {
     "test_cases": [
-      "Render MotivationalSatirical component and verify loading state displays 'Carregando frases...'",
-      "Mock successful fetch responses and verify motivational and satirical phrases are displayed correctly",
-      "Mock fetch failure and verify error message 'Erro ao carregar as frases.' is displayed",
-      "Verify Phrase component renders with correct title, text, and className props",
-      "Verify accessibility roles and aria-labels are correctly applied",
-      "Test responsiveness by simulating different viewport widths and checking CSS class effects"
+      "Submit with valid words and type 'Motivacional' returns a motivational phrase",
+      "Submit with valid words and type 'Satírica' returns a satirical phrase",
+      "Submit with empty words input shows error 'Por favor, insira palavras para gerar a frase.'",
+      "Submit with invalid type shows error 'Tipo inválido selecionado.'",
+      "Submit with words that become empty after sanitization returns 400 with 'Palavras inválidas após sanitização.'",
+      "Backend returns 400 for invalid input types or missing fields",
+      "Backend handles internal errors and returns 500 with 'Erro interno ao gerar frase.'",
+      "Loading state disables submit button and shows 'Gerando...' text",
+      "Error messages are displayed with role='alert'",
+      "Generated phrase is displayed with aria-live='polite'"
     ],
     "issues_found": [
-      "No explicit handling of non-200 HTTP responses in fetch calls, which may cause unhandled errors",
-      "No tests for empty or missing 'phrase' fields in API response objects",
-      "No cancellation of fetch requests on component unmount (isMounted flag used but fetch not aborted)"
+      "Frontend validation allows only 'Motivacional' and 'Satírica' but backend also validates; duplication could be centralized",
+      "Backend uses both express-validator escape() and sanitize-html which may be redundant or cause double escaping",
+      "No test coverage for backend route with unexpected 'tipo' value beyond validation (though unlikely)",
+      "No debounce or throttling on input changes, could cause multiple rapid submissions",
+      "No unit tests provided for phrase generation functions or sanitizeInput function"
     ],
-    "coverage_percentage": 90,
+    "coverage_percentage": 85,
     "approved": true,
     "recommendations": [
-      "Add error handling for non-200 HTTP responses in fetch calls",
-      "Consider using AbortController to cancel fetch requests on component unmount",
-      "Add tests for edge cases such as empty or missing phrase fields in API responses",
-      "Add unit tests for Phrase component separately to ensure prop validation and rendering"
+      "Add unit tests for generateMotivationalPhrase, generateSatiricalPhrase, and sanitizeInput functions",
+      "Consider centralizing validation logic to avoid duplication between frontend and backend",
+      "Review sanitization strategy to avoid redundant escaping",
+      "Implement input debouncing or disable submit button on rapid clicks to prevent multiple requests",
+      "Add integration tests simulating API errors and network failures"
     ]
   },
-  "duration": "4279ms",
+  "duration": "5620ms",
   "gatewayStatus": "approved"
 }

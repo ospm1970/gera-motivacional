@@ -2,41 +2,45 @@
   "status": "completed",
   "result": {
     "user_stories": [
-      "Como usuário final, quero visualizar as frases motivacional e satírica lado a lado para facilitar a comparação entre elas.",
-      "Como usuário, desejo que as frases sejam exibidas de forma clara e responsiva em diferentes dispositivos para uma boa experiência de leitura.",
-      "Como desenvolvedor, preciso manter a funcionalidade atual de geração das frases para garantir que a alteração não impacte a geração das frases.",
-      "Como usuário, quero que as frases sejam claramente identificadas com títulos ou estilos visuais diferentes para entender facilmente qual frase é motivacional e qual é satírica.",
-      "Como time de desenvolvimento, precisamos garantir que a alteração na interface não degrade a performance da aplicação para manter a experiência do usuário."
+      "Como usuário final, quero ver o título da tela atualizado para 'Geração de Frases Personalizadas' para entender claramente a funcionalidade da aplicação.",
+      "Como usuário final, quero selecionar o tipo da frase ('Motivacional' ou 'Satírica') através de uma combobox para personalizar a frase gerada conforme minha preferência.",
+      "Como usuário final, quero que a frase gerada seja baseada no tipo selecionado para receber uma frase motivacional ou satírica conforme minha escolha.",
+      "Como desenvolvedor, quero que a nova funcionalidade seja integrada ao backend Node.js Express para garantir a geração correta das frases via API.",
+      "Como usuário final, quero uma interface clara e responsiva com feedback visual para facilitar a seleção do tipo de frase e a visualização da frase gerada."
     ],
     "technical_requirements": [
-      "Modificar o front-end para exibir simultaneamente as frases motivacional e satírica lado a lado na tela principal.",
-      "Implementar layout responsivo que adapta a exibição lado a lado para dispositivos desktop, tablets e dispositivos móveis.",
-      "Garantir que cada frase tenha uma identificação visual distinta, como título ou estilo CSS diferenciado.",
-      "Manter as chamadas aos endpoints existentes para geração das frases sem alteração na lógica backend.",
-      "Garantir que o tempo de carregamento da página não aumente mais que 100ms após a alteração.",
-      "Testar a interface em múltiplos navegadores e dispositivos para garantir responsividade e acessibilidade.",
-      "Documentar as alterações no código front-end, mantendo código limpo, modular e seguindo padrões do projeto Node.js com Express.",
-      "Criar testes automatizados para validar a exibição correta das duas frases lado a lado.",
-      "Assegurar que as práticas atuais de segurança sejam mantidas, especialmente no tratamento e exibição dos dados das frases.",
-      "Utilizar componentes reutilizáveis no front-end para facilitar a manutenção futura."
+      "Atualizar o componente de título na interface para exibir 'Geração de Frases Personalizadas' visível e destacado.",
+      "Adicionar uma combobox logo após o campo de entrada de palavras com opções exclusivas 'Motivacional' e 'Satírica'.",
+      "Implementar validação no frontend para garantir que apenas uma opção seja selecionada e enviada corretamente na requisição.",
+      "No backend, implementar a função generateSatiricalPhrase(words) para geração de frases satíricas.",
+      "Modificar o endpoint POST /api/phrases para aceitar o parâmetro 'tipo' e chamar a função correta (generateMotivationalPhrase ou generateSatiricalPhrase).",
+      "Adicionar validação no backend para aceitar somente os tipos 'Motivacional' e 'Satírica' e rejeitar entradas inválidas.",
+      "Garantir que o tempo de resposta da geração da frase não exceda 2 segundos, monitorando a latência da API.",
+      "Manter práticas de segurança com validação e sanitização das entradas no middleware para prevenir injeção e ataques.",
+      "Implementar testes unitários para a função generateSatiricalPhrase e testes de integração para a comunicação frontend-backend.",
+      "Garantir que a interface seja responsiva e acessível em dispositivos desktop e móveis, seguindo padrões de UX design.",
+      "Documentar o código de forma modular para facilitar futuras manutenções e adição de novos tipos de frases."
     ],
-    "estimated_effort_hours": 40,
+    "estimated_effort_hours": 56,
     "risks": [
-      "Alterações no layout podem causar problemas de responsividade em dispositivos menos comuns ou navegadores antigos.",
-      "Mudanças na interface podem impactar a performance da aplicação se não forem otimizadas corretamente.",
-      "Possibilidade de erros visuais ou falhas na exibição simultânea das frases se a lógica de carregamento não for corretamente ajustada.",
-      "Risco de não manter a consistência visual com o design atual, afetando a usabilidade e experiência do usuário."
+      "Possível aumento de latência na geração de frases devido à nova lógica para frases satíricas.",
+      "Risco de falhas na validação do parâmetro 'tipo' causando erros ou geração incorreta de frases.",
+      "Problemas de usabilidade se a combobox não for posicionada ou implementada corretamente, afetando a experiência do usuário.",
+      "Falhas de segurança caso a sanitização das entradas não seja corretamente aplicada, expondo a aplicação a ataques.",
+      "Dependência da integração correta entre frontend e backend pode causar bugs se não houver testes adequados."
     ],
     "acceptance_criteria": [
-      "As duas frases (motivacional e satírica) são exibidas simultaneamente e lado a lado na tela principal.",
-      "A interface é responsiva e mantém legibilidade em dispositivos desktop, tablet e mobile.",
-      "Cada frase possui identificação visual clara e distinta (ex: título ou estilo diferente).",
-      "A funcionalidade atual de geração das frases permanece inalterada e sem erros.",
-      "Não há erros visuais ou falhas na interface após a implementação.",
-      "O tempo de carregamento da página não aumenta mais que 100ms comparado à versão anterior.",
-      "Testes em múltiplos dispositivos e navegadores confirmam a responsividade e acessibilidade da interface.",
-      "Documentação atualizada e testes automatizados implementados para a nova funcionalidade."
+      "O título da tela deve ser exibido exatamente como 'Geração de Frases Personalizadas' e estar visível e destacado na interface.",
+      "A combobox deve conter as opções 'Motivacional' e 'Satírica', estar posicionada imediatamente após o campo de entrada de palavras, e permitir seleção única.",
+      "Ao submeter as palavras e o tipo selecionado, o sistema deve gerar e exibir uma frase correspondente ao tipo escolhido.",
+      "A geração da frase deve utilizar o endpoint POST /api/phrases com o parâmetro 'tipo' enviado corretamente.",
+      "O tempo de resposta para geração da frase não deve exceder 2 segundos em 95% das requisições.",
+      "Entradas do usuário devem ser validadas e sanitizadas para prevenir injeção e ataques, conforme cobertura de testes de segurança.",
+      "A interface deve ser responsiva e acessível em dispositivos desktop e móveis, conforme testes de usabilidade.",
+      "Testes unitários e de integração devem cobrir a nova funcionalidade, garantindo que a geração de frases satíricas e motivacionais funcione corretamente.",
+      "Nenhuma vulnerabilidade relacionada à entrada de dados deve ser detectada após análise de segurança.",
+      "O código deve estar documentado e modular para facilitar manutenção futura."
     ]
   },
-  "duration": "9888ms"
+  "duration": "9929ms"
 }
