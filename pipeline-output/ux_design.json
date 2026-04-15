@@ -5,76 +5,85 @@
     "design_specifications": {
       "user_journey": {
         "personas": [
-          "Usuário final buscando inspiração e entretenimento através de frases motivacionais e satíricas.",
-          "Desenvolvedor front-end responsável por implementar alterações mantendo performance e qualidade do código.",
-          "Time de desenvolvimento focado em garantir a estabilidade e usabilidade da aplicação."
+          "Usuário Final - busca frases motivacionais ou satíricas personalizadas para inspiração ou humor, com preferência por uma interface simples e clara.",
+          "Desenvolvedor Backend - responsável pela integração da API Node.js Express, garantindo performance, segurança e manutenção futura."
         ],
         "key_flows": [
-          "Usuário acessa a tela principal e visualiza as frases motivacional e satírica lado a lado para rápida comparação.",
-          "Usuário navega em diferentes dispositivos (desktop, tablet, mobile) e tem uma experiência consistente e clara.",
-          "Desenvolvedor atualiza o front-end garantindo que as chamadas aos endpoints permaneçam intactas e que o desempenho seja mantido."
+          "Usuário acessa a tela principal e visualiza o título 'Geração de Frases Personalizadas'.",
+          "Usuário insere palavras-chave no campo de entrada e seleciona o tipo de frase ('Motivacional' ou 'Satírica') via combobox.",
+          "Usuário envia a requisição para gerar a frase personalizada.",
+          "Sistema processa a requisição, valida entradas, chama a API backend com o parâmetro 'tipo'.",
+          "Usuário visualiza a frase gerada com feedback visual claro e imediato.",
+          "Desenvolvedor monitora latência e erros da API, realiza testes unitários e integração para garantir qualidade."
         ],
         "friction_points": [
-          "Dificuldade do usuário em identificar rapidamente qual frase é motivacional e qual é satírica sem diferenciação visual clara.",
-          "Possível sobrecarga visual ou quebra de layout em dispositivos menores se o design não for responsivo.",
-          "Risco de impacto na performance da aplicação devido à renderização simultânea de duas frases e alterações no layout."
+          "Possibilidade do usuário esquecer de selecionar o tipo da frase, resultando em erro ou frase padrão.",
+          "Demora na geração da frase podendo gerar frustração se ultrapassar 2 segundos.",
+          "Falta de feedback visual claro durante o processamento, causando incerteza no usuário.",
+          "Dificuldade em navegar ou interagir em dispositivos móveis se a interface não for responsiva.",
+          "Risco de entradas maliciosas caso validação e sanitização não estejam adequadas no backend."
         ]
       },
       "information_architecture": {
-        "hierarchy": "Título principal da página seguido por duas seções paralelas claramente identificadas: uma para Frase Motivacional e outra para Frase Satírica, cada uma contendo título, corpo da frase e possíveis elementos visuais para distinção.",
+        "hierarchy": "Título principal destacado no topo, seguido pelo campo de entrada de palavras-chave, logo abaixo a combobox para seleção do tipo de frase, botão de geração da frase, área de exibição da frase gerada com feedback visual, e mensagens de erro ou loading claros e visíveis.",
         "navigation": [
-          "Tela principal com acesso direto às frases lado a lado.",
-          "Menu ou barra superior com opções padrão do sistema (se aplicável), mantendo foco na visualização das frases."
+          "Tela única principal com foco na geração de frases personalizadas.",
+          "Menu lateral ou superior (se existir) com acesso a outras funcionalidades do app, mas não obrigatório para esta feature.",
+          "Botão claro para geração/atualização da frase após seleção."
         ],
         "categorization": [
-          "Frase Motivacional: Conteúdo positivo, inspirador, transmitindo motivação.",
-          "Frase Satírica: Conteúdo irônico, humorístico, transmitindo crítica leve e sátira."
+          "Tipo de frase: Motivacional, Satírica.",
+          "Status da interação: Entrada, Seleção, Geração, Resultado, Erro."
         ]
       },
       "layout_structure": {
-        "type": "Two-column layout",
+        "type": "Single-column vertical flow layout",
         "components": [
-          "Header com título da página",
-          "Coluna esquerda: Componente Frase Motivacional (título + frase)",
-          "Coluna direita: Componente Frase Satírica (título + frase)",
-          "Footer (se aplicável)"
+          "Título destacado",
+          "Campo de entrada de palavras-chave",
+          "Combobox para seleção do tipo de frase",
+          "Botão para geração da frase",
+          "Área de exibição da frase gerada com feedback visual",
+          "Mensagens de erro/loading"
         ],
         "responsive": {
-          "mobile": "Layout vertical, frases empilhadas, cada uma ocupando 100% da largura da tela com espaçamento adequado entre elas.",
-          "tablet": "Layout duas colunas adaptado com colunas lado a lado, cada uma ocupando aproximadamente 50% da largura, com margem interna para evitar aglomeração.",
-          "desktop": "Layout fixo em duas colunas lado a lado, cada coluna ocupando 50% do container centralizado, garantindo equilíbrio visual e leitura confortável."
+          "mobile": "Componentes empilhados verticalmente, largura total com margens internas, botões e inputs com tamanho mínimo para toque confortável, fonte legível, feedback visual adaptado para telas pequenas.",
+          "tablet": "Layout similar ao mobile com maior espaçamento entre componentes, possível centralização com largura máxima restrita para melhor leitura.",
+          "desktop": "Layout centralizado com largura fixa moderada para conforto visual, componentes alinhados verticalmente, espaços generosos entre elementos, título destacado com maior tamanho."
         }
       },
       "design_system": {
-        "typography": "Fonte sans-serif moderna e legível (ex: Roboto, Open Sans) com tamanhos escalonados: Títulos 24px (desktop), 20px (tablet), 18px (mobile); Corpo da frase 16px (desktop/tablet), 14px (mobile). Peso de fonte para títulos semi-bold e corpo regular.",
-        "colors": "Paleta diferenciada para as frases: Frase Motivacional com fundo claro azul suave (#E6F0FA) e texto azul escuro (#1A3E72); Frase Satírica com fundo claro cinza (#F5F5F5) e texto cinza escuro (#4A4A4A). Cores de destaque para títulos e bordas conforme a identidade visual do projeto.",
-        "spacing": "Sistema de espaçamento baseado em múltiplos de 8px: margens externas 16px a 24px, espaçamento interno dos componentes 12px a 16px, espaçamento entre as colunas 24px a 32px para desktop e tablet, menor espaçamento vertical em mobile para conforto visual.",
+        "typography": "Fonte sans-serif legível (ex: Inter ou Roboto), Título principal em 24-28px bold, labels e inputs em 16px regular, frases geradas em 18px semibold, espaçamento consistente entre linhas para legibilidade.",
+        "colors": "Paleta principal com cores neutras para fundo (ex: branco ou cinza claro), texto escuro (cor quase preta #212121), cor primária azul (#2F80ED) para botões e seleção, cor de erro vermelha (#EB5757), feedback positivo em verde (#27AE60), fundo do combobox e inputs branco com bordas cinza clara (#E0E0E0).",
+        "spacing": "Sistema de espaçamento modular baseado em múltiplos de 8px (ex: 8, 16, 24, 32), margens internas (padding) e externas (margin) consistentes para garantir harmonia e responsividade.",
         "components": [
-          "Card de frase reutilizável com título, corpo de texto e estilo diferenciado por tipo (motivacional ou satírica).",
-          "Botões e indicadores (se houver) seguindo padrões existentes do projeto.",
-          "Containers responsivos com padding e margin adaptativos."
+          "Combobox: largura adaptativa, borda arredondada 4px, foco com outline visível na cor primária.",
+          "Botão: altura mínima 40px, borda arredondada 6px, cor de fundo primária, texto branco, efeitos de hover e active definidos.",
+          "Campo de texto: altura mínima 40px, borda simples, foco com borda destacada azul, placeholder com cor cinza clara.",
+          "Área de frase gerada: caixa com fundo levemente cinza (#F5F5F5), padding interno de 16px, borda sutil arredondada.",
+          "Mensagens de erro/loading: texto em cor vermelha para erro e azul para loading, posicionadas próximas ao campo relevante."
         ]
       },
       "accessibility": {
         "wcag_level": "AA",
-        "keyboard_nav": "Todos os elementos interativos (ex: botões para nova frase, se houver) devem ser acessíveis via tabulação, com foco visível claro e ordem lógica de navegação.",
-        "screen_reader": "Títulos das frases devem ser marcados semanticamente (ex: <h2>), frases devem ser envolvidas em elementos que permitam leitura clara, com atributos ARIA para diferenciação clara entre motivacional e satírica.",
-        "contrast_ratio": "Textos devem manter contraste mínimo de 4.5:1 com o fundo para garantir legibilidade mesmo para usuários com baixa visão."
+        "keyboard_nav": "Todos os componentes interativos (combobox, botão, campo de texto) devem ser acessíveis via teclado com ordem lógica de tabulação, foco visível e suporte a seleção via teclado (setas para combobox).",
+        "screen_reader": "Uso de labels explícitas vinculadas a inputs e combobox, descrição clara do título da página e estado dos componentes, alertas ARIA para mensagens de erro e feedback dinâmico da frase gerada.",
+        "contrast_ratio": "Garantir contraste mínimo de 4.5:1 entre texto e fundo para todos os elementos importantes, incluindo texto, botões e mensagens de erro."
       },
       "interactions": {
         "states": [
-          "default: frases exibidas com estilos base, títulos e corpo visíveis.",
-          "hover: leve destaque no card ou mudança sutil na sombra para indicar foco visual (desktop/tablet).",
-          "active: efeito de clique ou seleção para botões (se aplicável), com feedback visual imediato.",
-          "disabled: para botões ou controles desabilitados, com baixa opacidade e cursor padrão.",
-          "error: mensagens de erro exibidas de forma clara, com cores de alerta (ex: vermelho #D32F2F) e texto explicativo."
+          "default: componente com estilo base sem interação.",
+          "hover: botão e combobox com leve escurecimento ou sombra para indicar interatividade.",
+          "active: botão pressionado com efeito de clique visual claro.",
+          "disabled: botão desabilitado com opacidade reduzida e cursor não interativo.",
+          "error: borda e texto do componente em vermelho com mensagem de erro visível."
         ],
-        "animations": "Transições suaves para hover e troca de frases (fade-in/out com duração ~200ms) para não impactar performance, mantendo fluidez visual.",
-        "loading_state": "Exibição de spinner ou placeholder animado dentro dos cards de frase enquanto as frases são carregadas, garantindo feedback visual do processo.",
-        "empty_state": "Mensagem clara e amigável informando que não há frases disponíveis no momento, com sugestão para tentar recarregar ou aguardar."
+        "animations": "Transições suaves de 150-200ms para hover e foco em botões e inputs, feedback de carregamento com spinner animado ou barra sutil, animação discreta para atualização da frase gerada (ex: fade in).",
+        "loading_state": "Ao enviar a requisição, botão de geração desabilitado com spinner ao lado do texto ou substituindo texto, área de frase exibe mensagem 'Gerando frase...' com animação sutil.",
+        "empty_state": "Antes da geração, área de frase exibe mensagem guia como 'Sua frase personalizada aparecerá aqui' com texto cinza claro, sem interferir na leitura."
       }
     },
-    "timestamp": "2026-04-14T20:11:03.490Z"
+    "timestamp": "2026-04-15T19:53:31.828Z"
   },
-  "duration": "15872ms"
+  "duration": "19276ms"
 }

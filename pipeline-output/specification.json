@@ -2,34 +2,53 @@
   "status": "completed",
   "result": {
     "specification": {
-      "project_name": "Motivational Phrase Display Enhancement",
-      "description": "Alterar a interface do projeto para apresentar as duas frases geradas (motivacional e satírica) lado a lado para o usuário, melhorando a visualização e comparação das frases.",
+      "project_name": "Sistema de Geração de Frases Personalizadas",
+      "description": "Alteração da interface do projeto para renomear o título da tela para 'Geração de Frases Personalizadas' e adicionar uma combobox 'Tipo da Frase' com opções 'Motivacional' e 'Satírica'. A frase gerada será baseada na seleção do tipo feita pelo usuário.",
       "objectives": [
-        "Modificar a tela principal para exibir simultaneamente as duas frases geradas.",
-        "Garantir que as frases sejam apresentadas lado a lado de forma clara e responsiva.",
-        "Manter a funcionalidade atual de geração e exibição das frases.",
-        "Assegurar que a alteração seja consistente com o design e usabilidade do sistema."
+        "Atualizar o título da tela do projeto para 'Geração de Frases Personalizadas'.",
+        "Adicionar uma combobox 'Tipo da Frase' logo após a área de digitação das palavras.",
+        "Permitir que o usuário escolha entre os tipos 'Motivacional' e 'Satírica'.",
+        "Gerar uma frase personalizada conforme o tipo selecionado.",
+        "Integrar a nova funcionalidade com o backend Node.js Express existente."
       ],
-      "target_users": "Usuários finais que acessam a aplicação para visualizar frases motivacionais e satíricas geradas."
+      "target_users": "Usuários finais que utilizam a aplicação para gerar frases personalizadas motivacionais ou satíricas."
     },
     "principles": {
-      "code_quality": "Seguir os padrões existentes do projeto Node.js com Express, manter código limpo, modular e documentado. Garantir testes para a nova interface.",
-      "ux_design": "Interface clara, responsiva e acessível. Frases devem estar visualmente equilibradas lado a lado, com espaçamento adequado e legibilidade.",
-      "performance": "Alterações na interface não devem impactar a performance da aplicação. Carregamento das frases deve ser rápido e sem atrasos perceptíveis.",
-      "security": "Manter as práticas atuais de segurança, especialmente no tratamento de dados recebidos e exibidos na interface.",
-      "maintainability": "Código front-end organizado para facilitar futuras alterações. Utilizar componentes reutilizáveis se aplicável."
+      "code_quality": "Manter padrões de codificação existentes, incluindo uso de middleware, validação e tratamento de erros. Garantir testes unitários para as novas funcionalidades.",
+      "ux_design": "Interface clara e intuitiva, com o novo título visível e combobox de fácil acesso logo após o campo de entrada de palavras. Feedback visual para seleção e geração da frase.",
+      "performance": "Resposta rápida na geração da frase, mantendo latência baixa nas chamadas ao backend.",
+      "security": "Manter as práticas atuais de segurança, incluindo validação de entrada e proteção contra ataques comuns via middleware.",
+      "maintainability": "Código modular e documentado, facilitando futuras adições de tipos de frases ou alterações na interface."
     },
     "functional_requirements": [
       {
         "id": "FR-001",
-        "title": "Exibir duas frases lado a lado",
-        "description": "A tela do projeto deve ser alterada para apresentar as duas frases geradas (motivacional e satírica) lado a lado para o usuário.",
+        "title": "Alterar título da tela do projeto",
+        "description": "Modificar o título exibido na tela principal para 'Geração de Frases Personalizadas'.",
         "acceptance_criteria": [
-          "As duas frases são exibidas simultaneamente na tela principal.",
-          "As frases aparecem lado a lado em dispositivos desktop e se adaptam responsivamente em dispositivos móveis.",
-          "Cada frase é claramente identificada (ex: título ou estilo visual diferente).",
-          "A funcionalidade atual de geração das frases permanece inalterada.",
-          "Não há erros ou falhas visuais após a alteração."
+          "O título da tela deve ser exibido exatamente como 'Geração de Frases Personalizadas'.",
+          "O título deve estar visível e destacado na interface."
+        ]
+      },
+      {
+        "id": "FR-002",
+        "title": "Adicionar combobox 'Tipo da Frase'",
+        "description": "Inserir uma combobox logo após a área de digitação das palavras com as opções 'Motivacional' e 'Satírica'.",
+        "acceptance_criteria": [
+          "A combobox deve conter as opções 'Motivacional' e 'Satírica'.",
+          "A combobox deve estar posicionada imediatamente após o campo de entrada de palavras.",
+          "O usuário deve poder selecionar apenas uma opção por vez."
+        ]
+      },
+      {
+        "id": "FR-003",
+        "title": "Gerar frase conforme tipo selecionado",
+        "description": "Ao submeter as palavras e o tipo selecionado, o sistema deve gerar uma frase personalizada do tipo escolhido.",
+        "acceptance_criteria": [
+          "Se 'Motivacional' for selecionado, a frase gerada deve ser motivacional.",
+          "Se 'Satírica' for selecionado, a frase gerada deve ser satírica.",
+          "A frase gerada deve ser exibida ao usuário após a submissão.",
+          "A geração da frase deve utilizar o endpoint POST /api/phrases com o tipo selecionado como parâmetro."
         ]
       }
     ],
@@ -37,53 +56,67 @@
       {
         "id": "NFR-001",
         "category": "Performance",
-        "requirement": "A alteração na interface não deve aumentar o tempo de carregamento da página em mais de 100ms.",
-        "metric": "Medição do tempo de carregamento antes e depois da alteração usando ferramentas de performance."
+        "requirement": "O tempo de resposta para geração da frase não deve exceder 2 segundos.",
+        "metric": "Medição do tempo entre submissão e exibição da frase."
       },
       {
         "id": "NFR-002",
         "category": "Usabilidade",
-        "requirement": "A interface deve ser responsiva e acessível, garantindo legibilidade das frases em diferentes tamanhos de tela.",
-        "metric": "Teste em múltiplos dispositivos e navegadores, validação com ferramentas de acessibilidade."
+        "requirement": "A interface deve ser responsiva e acessível em dispositivos desktop e móveis.",
+        "metric": "Teste de responsividade e conformidade com padrões de acessibilidade."
+      },
+      {
+        "id": "NFR-003",
+        "category": "Segurança",
+        "requirement": "Validação e sanitização das entradas do usuário para prevenir injeção e ataques.",
+        "metric": "Cobertura de testes de segurança e uso de middleware de validação."
       }
     ],
     "technical_plan": {
       "tech_stack": {
-        "frontend": "HTML, CSS (possivelmente Tailwind CSS ou CSS customizado), JavaScript",
+        "frontend": "React (presumido pelo contexto do projeto), HTML, CSS",
         "backend": "Node.js com Express",
-        "database": "Não aplicável para esta alteração",
-        "infrastructure": "Hospedagem atual do projeto (não alterada)"
+        "database": "Não aplicável para esta funcionalidade",
+        "infrastructure": "Deploy atual do projeto (não especificado)",
+        "others": "Middleware existentes para validação e segurança"
       },
-      "architecture": "Aplicação web tradicional com backend em Node.js/Express servindo endpoints e frontend estático na pasta public. A alteração será feita na camada de frontend, ajustando a página que consome as APIs para exibir as frases lado a lado.",
+      "architecture": "Aplicação web cliente-servidor com frontend consumindo API RESTful no backend Node.js Express. A nova funcionalidade será integrada no frontend com chamada ao endpoint POST /api/phrases, enviando o tipo de frase selecionado e as palavras para geração.",
       "key_integrations": [
-        "Endpoint POST /api/motivational-phrase para geração das frases",
-        "Consumo das funções generateMotivationalPhrase e generateSatiricalPhrase no backend"
+        "Endpoint POST /api/phrases para geração de frases",
+        "Função generateMotivationalPhrase(words) para geração motivacional",
+        "Implementar função equivalente para geração de frases satíricas no backend"
       ]
     },
     "task_breakdown": {
       "epics": [
         {
           "id": "E-001",
-          "title": "Alteração da Interface para Exibição Lado a Lado",
-          "description": "Modificar a tela principal para apresentar as duas frases geradas lado a lado com responsividade e clareza.",
+          "title": "Atualização da Interface para Geração de Frases Personalizadas",
+          "description": "Modificar a interface do projeto para suportar seleção do tipo de frase e atualização do título.",
           "features": [
             {
               "id": "F-001",
-              "title": "Implementar layout lado a lado das frases",
+              "title": "Alteração do título da tela",
               "tasks": [
                 {
                   "id": "T-001",
-                  "title": "Analisar código front-end atual e identificar pontos de alteração",
-                  "description": "Revisar os arquivos da pasta public que gerenciam a exibição das frases para entender a estrutura atual.",
-                  "effort_days": 1,
+                  "title": "Modificar componente de título na UI",
+                  "description": "Alterar o texto do título para 'Geração de Frases Personalizadas'.",
+                  "effort_days": 0.5,
                   "dependencies": [],
                   "priority": "High"
-                },
+                }
+              ]
+            },
+            {
+              "id": "F-002",
+              "title": "Adicionar combobox 'Tipo da Frase'",
+              "tasks": [
                 {
                   "id": "T-002",
-                  "title": "Criar layout responsivo para exibir duas frases lado a lado",
-                  "description": "Alterar HTML/CSS para posicionar as frases lado a lado, garantindo responsividade para diferentes dispositivos.",
-                  "effort_days": 2,
+                  "title": "Criar componente combobox com opções Motivacional e Satírica",
+                  "description": "Implementar combobox logo após o campo de entrada de palavras.",
+                  "effort_days": 1,
                   "dependencies": [
                     "T-001"
                   ],
@@ -91,35 +124,88 @@
                 },
                 {
                   "id": "T-003",
-                  "title": "Ajustar lógica de exibição para carregar e mostrar ambas as frases simultaneamente",
-                  "description": "Modificar JavaScript para garantir que as duas frases (motivacional e satírica) sejam exibidas ao mesmo tempo.",
+                  "title": "Validar seleção do tipo de frase no frontend",
+                  "description": "Garantir que o valor selecionado seja enviado corretamente na requisição.",
+                  "effort_days": 0.5,
+                  "dependencies": [
+                    "T-002"
+                  ],
+                  "priority": "High"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "E-002",
+          "title": "Implementação da geração de frases satíricas",
+          "description": "Adicionar suporte no backend para geração de frases satíricas conforme seleção do usuário.",
+          "features": [
+            {
+              "id": "F-003",
+              "title": "Backend para geração de frases satíricas",
+              "tasks": [
+                {
+                  "id": "T-004",
+                  "title": "Implementar função generateSatiricalPhrase(words)",
+                  "description": "Criar função no backend para gerar frases satíricas com base nas palavras fornecidas.",
+                  "effort_days": 2,
+                  "dependencies": [],
+                  "priority": "High"
+                },
+                {
+                  "id": "T-005",
+                  "title": "Modificar endpoint POST /api/phrases para suportar tipo de frase",
+                  "description": "Adaptar endpoint para receber parâmetro 'tipo' e chamar a função correta de geração.",
                   "effort_days": 1,
                   "dependencies": [
-                    "T-001"
+                    "T-004"
                   ],
                   "priority": "High"
                 },
                 {
-                  "id": "T-004",
-                  "title": "Testar visualização em múltiplos dispositivos e navegadores",
-                  "description": "Garantir que o layout lado a lado funcione corretamente em desktop, tablet e mobile, e em navegadores principais.",
-                  "effort_days": 1,
-                  "dependencies": [
-                    "T-002",
-                    "T-003"
-                  ],
-                  "priority": "Medium"
-                },
-                {
-                  "id": "T-005",
-                  "title": "Documentar alterações realizadas",
-                  "description": "Atualizar documentação do projeto com as mudanças feitas na interface.",
+                  "id": "T-006",
+                  "title": "Adicionar validação do parâmetro 'tipo' no backend",
+                  "description": "Garantir que apenas os tipos 'Motivacional' e 'Satírica' sejam aceitos.",
                   "effort_days": 0.5,
                   "dependencies": [
-                    "T-002",
-                    "T-003"
+                    "T-005"
                   ],
-                  "priority": "Low"
+                  "priority": "High"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "E-003",
+          "title": "Testes e Validação",
+          "description": "Garantir qualidade e funcionamento correto da nova funcionalidade.",
+          "features": [
+            {
+              "id": "F-004",
+              "title": "Testes unitários e integração",
+              "tasks": [
+                {
+                  "id": "T-007",
+                  "title": "Escrever testes unitários para generateSatiricalPhrase",
+                  "description": "Cobrir casos de geração de frases satíricas.",
+                  "effort_days": 1,
+                  "dependencies": [
+                    "T-004"
+                  ],
+                  "priority": "High"
+                },
+                {
+                  "id": "T-008",
+                  "title": "Testar integração do frontend com backend para seleção do tipo",
+                  "description": "Garantir que a combobox influencia corretamente a frase gerada.",
+                  "effort_days": 1,
+                  "dependencies": [
+                    "T-003",
+                    "T-005"
+                  ],
+                  "priority": "High"
                 }
               ]
             }
@@ -129,21 +215,31 @@
     },
     "success_criteria": [
       {
-        "metric": "Exibição simultânea das frases",
-        "target": "100% das sessões exibem as duas frases lado a lado sem erros visuais",
-        "measurement": "Testes manuais e automáticos de UI"
+        "metric": "Título da tela atualizado",
+        "target": "Título exibido como 'Geração de Frases Personalizadas' em 100% das sessões",
+        "measurement": "Verificação visual e testes automatizados de UI"
       },
       {
-        "metric": "Performance de carregamento da página",
-        "target": "Aumento máximo de 100ms no tempo de carregamento da página",
-        "measurement": "Ferramentas de análise de performance (ex: Lighthouse)"
+        "metric": "Combobox funcional",
+        "target": "Combobox com opções 'Motivacional' e 'Satírica' disponível e funcional em 100% das sessões",
+        "measurement": "Testes funcionais e feedback do usuário"
       },
       {
-        "metric": "Responsividade da interface",
-        "target": "Interface adaptável e legível em 100% dos dispositivos testados",
-        "measurement": "Testes em dispositivos físicos e emuladores"
+        "metric": "Geração correta da frase",
+        "target": "Frase gerada corresponde ao tipo selecionado em 100% dos casos",
+        "measurement": "Testes automatizados e validação manual"
+      },
+      {
+        "metric": "Tempo de resposta",
+        "target": "Resposta da geração da frase em até 2 segundos em 95% das requisições",
+        "measurement": "Monitoramento de performance do backend"
+      },
+      {
+        "metric": "Segurança da entrada",
+        "target": "Nenhuma vulnerabilidade detectada relacionada à entrada de dados",
+        "measurement": "Testes de segurança e análise de código"
       }
     ]
   },
-  "duration": "19961ms"
+  "duration": "25306ms"
 }
