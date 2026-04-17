@@ -8,6 +8,7 @@ import { fileURLToPath } from 'url';
 import { body, validationResult } from 'express-validator';
 import sanitizeHtml from 'sanitize-html';
 import satiricalGenerator from './satiricalGenerator.js';
+import { addEntry, getHistory } from './history.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -20,7 +21,7 @@ const PORT = process.env.PORT || 3000;
 // ==========================================
 app.use(helmet());
 app.use(cors({
-  origin: process.env.NODE_ENV === 'production' ? 'https://seudominio.com' : '*',
+  origin: process.env.NODE_ENV === 'production' ? (process.env.ALLOWED_ORIGIN || 'https://seudominio.com') : '*',
   methods: ['GET', 'POST']
 }));
 app.use(express.json({ limit: '10kb' }));
@@ -127,13 +128,18 @@ app.post(
         ? sanitizeHtml(satiricalResult.value) 
         : 'Frase satírica indisponível no momento.';
 
-      // ✅ RESPOSTA CORRIGIDA: retorna motivationalPhrase (não phrase)
+      const timestamp = new Date().toISOString();
+
+      await addEntry({ words, motivationalPhrase, satiricalPhrase, timestamp }).catch(
+        err => console.error('[History Error]:', err.message)
+      );
+
       return res.json({
         success: true,
         words,
         motivationalPhrase,
         satiricalPhrase,
-        timestamp: new Date().toISOString()
+        timestamp,
       });
 
     } catch (error) {
@@ -142,6 +148,18 @@ app.post(
     }
   }
 );
+
+// Histórico de frases geradas
+app.get('/api/history', async (req, res) => {
+  try {
+    const limit = Math.min(parseInt(req.query.limit) || 20, 100);
+    const entries = await getHistory(limit);
+    res.json({ success: true, count: entries.length, entries });
+  } catch (error) {
+    console.error('[History Error]:', error);
+    res.status(500).json({ error: 'Erro ao recuperar histórico.' });
+  }
+});
 
 // Health check
 app.get('/health', (req, res) => {
@@ -156,7 +174,7 @@ app.get('*', (req, res) => {
 // ==========================================
 // INICIALIZAÇÃO
 // ==========================================
-app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
   console.log(`🚀 Servidor rodando na porta ${PORT}`);
   console.log(`🛡️  Ambiente: ${process.env.NODE_ENV || 'development'}`);
   if (!process.env.OPENAI_API_KEY) {
@@ -164,195 +182,4 @@ app.listen(PORT, () => {
   }
 });
 
-
-/* Frontend React Component */
-import React, { useState } from 'react';
-
-/**
- * Component: PhraseGenerator
- * Renders the UI for generating personalized phrases
- * Allows user to input words, select phrase type, and displays generated phrase
- */
-export default function PhraseGenerator() {
-  const [words, setWords] = useState('');
-  const [type, setType] = useState('Motivacional');
-  const [phrase, setPhrase] = useState('');
-  const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
-
-  // Validate input and send request to backend
-  async function handleGeneratePhrase(e) {
-    e.preventDefault();
-    setError('');
-    setPhrase('');
-
-    // Validate type selection
-    if (type !== 'Motivacional' && type !== 'Satírica') {
-      setError('Tipo inválido selecionado.');
-      return;
-    }
-
-    // Validate words input
-    if (!words.trim()) {
-      setError('Por favor, insira palavras para gerar a frase.');
-      return;
-    }
-
-    setLoading(true);
-    try {
-      const response = await fetch('/api/phrases', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ words: words.trim(), tipo: type })
-      });
-
-      if (!response.ok) {
-        const err = await response.json();
-        setError(err.message || 'Erro ao gerar frase.');
-        setLoading(false);
-        return;
-      }
-
-      const data = await response.json();
-      setPhrase(data.phrase);
-    } catch (ex) {
-      setError('Erro de comunicação com o servidor.');
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  return (
-    <main style={{ maxWidth: 600, margin: 'auto', padding: 20 }}>
-      <h1 style={{ fontWeight: 'bold', fontSize: '1.8rem', marginBottom: 20 }} aria-label="Título da tela">Geração de Frases Personalizadas</h1>
-      <form onSubmit={handleGeneratePhrase} aria-label="Formulário de geração de frases">
-        <label htmlFor="wordsInput">Palavras para frase</label>
-        <input
-          id="wordsInput"
-          type="text"
-          value={words}
-          onChange={(e) => setWords(e.target.value)}
-          placeholder="Digite palavras separadas por espaço"
-          aria-required="true"
-          style={{ width: '100%', padding: 8, marginBottom: 12, fontSize: '1rem' }}
-        />
-
-        <label htmlFor="typeSelect" style={{ display: 'block', marginBottom: 4 }}>Tipo de frase</label>
-        <select
-          id="typeSelect"
-          value={type}
-          onChange={(e) => setType(e.target.value)}
-          required
-          aria-required="true"
-          style={{ width: '100%', padding: 8, marginBottom: 20, fontSize: '1rem' }}
-        >
-          <option value="Motivacional">Motivacional</option>
-          <option value="Satírica">Satírica</option>
-        </select>
-
-        <button
-          type="submit"
-          disabled={loading}
-          style={{ padding: '10px 20px', fontSize: '1rem', cursor: loading ? 'not-allowed' : 'pointer' }}
-          aria-busy={loading}
-        >
-          {loading ? 'Gerando...' : 'Gerar Frase'}
-        </button>
-      </form>
-
-      {error && <div role="alert" style={{ color: 'red', marginTop: 16 }}>{error}</div>}
-      {phrase && <blockquote style={{ marginTop: 20, fontSize: '1.2rem', fontStyle: 'italic' }} aria-live="polite">{phrase}</blockquote>}
-    </main>
-  );
-}
-
-/* Backend Node.js Express API */
-const express = require('express');
-const router = express.Router();
-const { body, validationResult } = require('express-validator');
-const sanitizeHtml = require('sanitize-html');
-
-/**
- * Generates a motivational phrase based on input words
- * @param {string} words
- * @returns {string}
- */
-function generateMotivationalPhrase(words) {
-  // Simple motivational phrase generation logic
-  const base = 'Acredite em si mesmo e '; 
-  return `${base}${words}. Você pode alcançar tudo!`;
-}
-
-/**
- * Generates a satirical phrase based on input words
- * @param {string} words
- * @returns {string}
- */
-function generateSatiricalPhrase(words) {
-  // Satirical phrase generation logic
-  const base = 'Com certeza, '; 
-  return `${base}${words}, mas não conte muito com isso...`;
-}
-
-/**
- * Middleware to sanitize input strings
- * @param {string} input
- * @returns {string}
- */
-function sanitizeInput(input) {
-  return sanitizeHtml(input, {
-    allowedTags: [],
-    allowedAttributes: {}
-  }).trim();
-}
-
-/**
- * POST /api/phrases
- * Request body: { words: string, tipo: 'Motivacional' | 'Satírica' }
- * Response: { phrase: string }
- */
-router.post(
-  '/phrases',
-  // Input validation and sanitization
-  body('words').isString().trim().notEmpty().escape(),
-  body('tipo').isIn(['Motivacional', 'Satírica']),
-  async (req, res) => {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({ message: 'Parâmetros inválidos.', errors: errors.array() });
-    }
-
-    // Sanitize inputs
-    const rawWords = req.body.words;
-    const tipo = req.body.tipo;
-    const words = sanitizeInput(rawWords);
-
-    if (!words) {
-      return res.status(400).json({ message: 'Palavras inválidas após sanitização.' });
-    }
-
-    try {
-      const start = Date.now();
-      let phrase = '';
-
-      if (tipo === 'Motivacional') {
-        phrase = generateMotivationalPhrase(words);
-      } else if (tipo === 'Satírica') {
-        phrase = generateSatiricalPhrase(words);
-      } else {
-        return res.status(400).json({ message: 'Tipo de frase inválido.' });
-      }
-
-      const duration = Date.now() - start;
-      if (duration > 2000) {
-        console.warn(`Geração de frase demorou ${duration}ms`);
-      }
-
-      res.json({ phrase });
-    } catch (error) {
-      res.status(500).json({ message: 'Erro interno ao gerar frase.' });
-    }
-  }
-);
-
-module.exports = { router, generateSatiricalPhrase, generateMotivationalPhrase };
+export default server;

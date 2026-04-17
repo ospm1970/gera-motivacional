@@ -28,3 +28,6 @@ logs/
 .cache/
 temp/
 tmp/
+
+# Histórico gerado em runtime
+data/
