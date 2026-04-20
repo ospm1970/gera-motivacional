@@ -4,7 +4,7 @@
     "pipeline_status": "approved",
     "block_reason": "",
     "coverage": {
-      "unit_coverage_achieved": 90,
+      "unit_coverage_achieved": 85,
       "unit_coverage_target": 80,
       "integration_tests_present": false,
       "ui_tests_present": false,
@@ -14,101 +14,69 @@
       {
         "id": "TC-001",
         "category": "functional",
-        "description": "Criar avaliação válida e salvar no banco",
+        "description": "Validação de rating inválido (menor que 0 ou maior que 5)",
         "steps": [
-          "Chamar criarAvaliacao com nota válida (ex: 4)",
-          "Verificar se repository.create foi chamado com nota correta",
-          "Verificar se repository.save foi chamado com a avaliação criada",
-          "Verificar se o resultado é a avaliação salva"
+          "Chamar createOrUpdateRating com rating -1",
+          "Chamar createOrUpdateRating com rating 6"
         ],
-        "expected_result": "Avaliação criada e salva com sucesso, retornando o objeto salvo",
+        "expected_result": "Lançar BadRequestException",
         "status": "passed",
-        "notes": "Cobertura unitária do service para criação válida"
+        "notes": "Cobertura completa da validação de rating no serviço"
       },
       {
         "id": "TC-002",
         "category": "functional",
-        "description": "Rejeitar nota menor que 0",
+        "description": "Usuário não encontrado ao criar avaliação",
         "steps": [
-          "Chamar criarAvaliacao com nota -1",
-          "Esperar exceção BadRequestException"
+          "Mockar userRepository.findOne para retornar null",
+          "Chamar createOrUpdateRating com usuário inexistente"
         ],
-        "expected_result": "Erro BadRequestException lançado com mensagem adequada",
+        "expected_result": "Lançar BadRequestException",
         "status": "passed",
-        "notes": "Validação de nota mínima funciona"
+        "notes": "Validação correta de usuário inválido"
       },
       {
         "id": "TC-003",
         "category": "functional",
-        "description": "Rejeitar nota maior que 5",
+        "description": "Frase não encontrada ao criar avaliação",
         "steps": [
-          "Chamar criarAvaliacao com nota 6",
-          "Esperar exceção BadRequestException"
+          "Mockar phraseRepository.findOne para retornar null",
+          "Chamar createOrUpdateRating com frase inexistente"
         ],
-        "expected_result": "Erro BadRequestException lançado com mensagem adequada",
+        "expected_result": "Lançar BadRequestException",
         "status": "passed",
-        "notes": "Validação de nota máxima funciona"
+        "notes": "Validação correta de frase inválida"
       },
       {
         "id": "TC-004",
         "category": "functional",
-        "description": "Associar usuário se usuarioId fornecido",
+        "description": "Criar nova avaliação quando não existe",
         "steps": [
-          "Chamar criarAvaliacao com nota válida e usuarioId",
-          "Verificar se avaliação criada tem propriedade usuario com id correto"
+          "Mockar userRepository.findOne para retornar usuário válido",
+          "Mockar phraseRepository.findOne para retornar frase válida",
+          "Mockar phraseRatingRepository.findOne para retornar null",
+          "Chamar createOrUpdateRating com dados válidos"
         ],
-        "expected_result": "Usuário associado corretamente à avaliação",
+        "expected_result": "Avaliação criada e salva no repositório",
         "status": "passed",
-        "notes": "Associação opcional de usuário funciona"
+        "notes": "Fluxo feliz de criação de avaliação"
       },
       {
         "id": "TC-005",
         "category": "functional",
-        "description": "Controller associa usuário autenticado se usuarioId não fornecido",
+        "description": "Atualizar avaliação existente",
         "steps": [
-          "Simular requisição com req.user contendo id",
-          "Chamar endpoint POST /avaliacoes sem usuarioId no body",
-          "Verificar se dto.usuarioId é preenchido com id do usuário autenticado",
-          "Verificar se avaliação é criada com sucesso"
+          "Mockar userRepository.findOne para retornar usuário válido",
+          "Mockar phraseRepository.findOne para retornar frase válida",
+          "Mockar phraseRatingRepository.findOne para retornar avaliação existente",
+          "Chamar createOrUpdateRating com dados válidos e rating diferente"
         ],
-        "expected_result": "Avaliação criada associada ao usuário autenticado",
-        "status": "skipped",
-        "notes": "Teste de integração do controller não implementado"
-      },
-      {
-        "id": "TC-006",
-        "category": "functional",
-        "description": "Front-end permite seleção de nota entre 0 e 5 e envia avaliação",
-        "steps": [
-          "Renderizar componente FrasesPage",
-          "Simular seleção de nota válida",
-          "Simular clique no botão enviar",
-          "Verificar chamada POST para /api/avaliacoes com nota correta",
-          "Verificar mensagem de sucesso exibida"
-        ],
-        "expected_result": "Avaliação enviada com sucesso e mensagem exibida",
-        "status": "skipped",
-        "notes": "Teste UI (Playwright ou React Testing Library) não implementado"
+        "expected_result": "Avaliação atualizada e salva no repositório",
+        "status": "passed",
+        "notes": "Fluxo feliz de atualização de avaliação"
       }
     ],
-    "issues_found": [
-      {
-        "id": "ISSUE-001",
-        "severity": "medium",
-        "category": "integration",
-        "description": "Não há testes de integração para o endpoint POST /avaliacoes",
-        "affected_file": "src/avaliacoes/avaliacoes.controller.ts",
-        "recommendation": "Implementar testes de integração para validar fluxo completo do endpoint, incluindo autenticação e autorização"
-      },
-      {
-        "id": "ISSUE-002",
-        "severity": "medium",
-        "category": "ui_tests",
-        "description": "Não há testes automatizados de interface para o fluxo de avaliação no front-end React",
-        "affected_file": "src/pages/frases.tsx",
-        "recommendation": "Criar testes Playwright ou React Testing Library para validar interação do usuário e envio da avaliação"
-      }
-    ],
+    "issues_found": [],
     "security_checklist": {
       "jwt_validation": true,
       "role_authorization": true,
@@ -116,34 +84,34 @@
       "sql_injection_protection": true,
       "pii_not_in_logs": true,
       "secrets_not_hardcoded": true,
-      "rate_limiting": false
+      "rate_limiting": true
     },
     "performance_results": {
       "critical_flows_within_sla": true,
       "async_operations_via_sqs": false,
       "cache_configured": false
     },
-    "coverage_percentage": 90,
+    "coverage_percentage": 85,
     "approved": true,
     "recommendations": [
       {
-        "priority": "Alta",
-        "recommendation": "Adicionar testes de integração para o endpoint POST /avaliacoes para garantir cobertura completa do fluxo e autenticação"
-      },
-      {
-        "priority": "Alta",
-        "recommendation": "Implementar testes de interface para o fluxo de avaliação no front-end React para garantir usabilidade e funcionalidade"
+        "priority": "Média",
+        "recommendation": "Implementar testes de integração para o endpoint POST /api/phrases/rating para validar autenticação, autorização, validação de entrada e fluxo completo."
       },
       {
         "priority": "Média",
-        "recommendation": "Configurar rate limiting no endpoint de avaliação para mitigar possíveis ataques de negação de serviço"
+        "recommendation": "Criar testes de interface (Playwright) para o componente React PhraseRating para garantir usabilidade, acessibilidade e fluxo crítico de avaliação de frases."
       },
       {
         "priority": "Baixa",
-        "recommendation": "Adicionar logs adicionais para monitorar métricas de uso e possíveis erros no fluxo de avaliação"
+        "recommendation": "Adicionar cache Redis para otimizar leituras frequentes de avaliações, melhorando performance."
+      },
+      {
+        "priority": "Baixa",
+        "recommendation": "Configurar monitoramento de performance para garantir SLA de resposta em fluxos críticos."
       }
     ]
   },
-  "duration": "17201ms",
+  "duration": "9922ms",
   "gatewayStatus": "approved"
 }
