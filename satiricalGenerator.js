@@ -1,9 +1,38 @@
 import OpenAI from 'openai';
 import sanitizeHtml from 'sanitize-html';
 
-const openai = new OpenAI({ 
-  apiKey: process.env.OPENAI_API_KEY 
+let openaiClient;
+let openaiFactory = () => new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
 });
+
+function getOpenAiClient() {
+  if (!openaiClient) {
+    openaiClient = openaiFactory();
+  }
+
+  return openaiClient;
+}
+
+export function __setOpenAiClientForTests(client) {
+  openaiClient = client;
+}
+
+export function __setOpenAiFactoryForTests(factory) {
+  openaiFactory = factory;
+  openaiClient = undefined;
+}
+
+export function __resetOpenAiTestDoubles() {
+  openaiFactory = () => new OpenAI({
+    apiKey: process.env.OPENAI_API_KEY,
+  });
+  openaiClient = undefined;
+}
+
+export function __createDefaultOpenAiClientForTests() {
+  return openaiFactory();
+}
 
 async function generateSatiricalPhrase(words) {
   const prompt = `Gere uma frase satírica em português usando estas três palavras: ${words.join(', ')}. 
@@ -11,11 +40,11 @@ O tom deve ser claramente satírico, sarcástico, mas não ofensivo ou desrespei
 Máximo de 30 palavras. Responda apenas com a frase.`;
 
   try {
-    const response = await openai.chat.completions.create({
-      model: 'gpt-3.5-turbo', // Modelo disponível e confiável
+    const response = await getOpenAiClient().chat.completions.create({
+      model: 'gpt-3.5-turbo',
       messages: [{ role: 'user', content: prompt }],
       max_tokens: 60,
-      temperature: 0.8
+      temperature: 0.8,
     });
 
     if (!response.choices || response.choices.length === 0) {
@@ -30,5 +59,5 @@ Máximo de 30 palavras. Responda apenas com a frase.`;
   }
 }
 
-// Exportação ES Module correta
+export { generateSatiricalPhrase };
 export default { generateSatiricalPhrase };
