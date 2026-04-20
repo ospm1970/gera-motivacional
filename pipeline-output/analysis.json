@@ -4,88 +4,96 @@
     "user_stories": [
       {
         "id": "US-001",
-        "title": "Avaliar frases motivacionais geradas",
-        "description": "Como usuário, quero poder avaliar as frases motivacionais geradas atribuindo uma nota de 0 a 5 para expressar minha opinião sobre a qualidade das frases.",
+        "title": "Avaliar frases geradas",
+        "description": "Como usuário, quero poder avaliar as frases geradas pelo sistema com uma nota de 0 a 5 para expressar minha opinião sobre a qualidade da frase.",
         "acceptance_criteria": [
-          "Campo de avaliação aparece somente após frase gerada com sucesso",
-          "Nota pode ser selecionada entre 0 e 5, inclusive",
-          "Interface é responsiva e acessível"
+          "O campo de avaliação aceita apenas valores inteiros entre 0 e 5",
+          "O campo é acessível via teclado e leitores de tela",
+          "A nota é enviada ao backend ao ser confirmada pelo usuário"
         ]
       },
       {
         "id": "US-002",
-        "title": "Enviar avaliação para backend",
-        "description": "Como usuário autenticado, quero enviar minha avaliação para o backend para que minha nota seja armazenada e utilizada para análises futuras.",
+        "title": "Submeter avaliação autenticada",
+        "description": "Como usuário autenticado, quero que minha avaliação seja submetida com segurança para que minhas notas sejam armazenadas corretamente e associadas a mim.",
         "acceptance_criteria": [
-          "Nota enviada associada à frase gerada e ao usuário autenticado",
-          "Resposta do servidor confirma sucesso ou detalha erro",
-          "Validação da nota no backend (0 a 5, inteiro)"
+          "A submissão da nota requer autenticação",
+          "Notas inválidas são rejeitadas com resposta 400",
+          "Resposta 200 OK é retornada em caso de sucesso"
         ]
       },
       {
         "id": "US-003",
-        "title": "Visualizar confirmação de avaliação",
-        "description": "Como usuário, quero receber confirmação de que minha avaliação foi armazenada com sucesso para garantir que minha nota foi registrada.",
+        "title": "Visualizar avaliação na interface",
+        "description": "Como usuário, quero ver um componente intuitivo e acessível para avaliar as frases geradas, garantindo uma boa experiência de uso.",
         "acceptance_criteria": [
-          "Mensagem de sucesso exibida após submissão da nota",
-          "Erros são exibidos claramente em caso de falha"
+          "Componente React para seleção de nota 0-5 está implementado",
+          "Componente é integrado com backend via API",
+          "Componente é acessível e usável"
         ]
       }
     ],
     "technical_requirements": [
       {
         "id": "FR-001",
-        "title": "Exibir campo de avaliação após geração da frase",
-        "description": "Após a geração da frase motivacional, a interface deve apresentar um campo para o usuário selecionar uma nota de 0 a 5.",
+        "title": "Campo de Avaliação na Tela de Frases",
+        "description": "Exibir campo interativo para seleção de nota de 0 a 5 após geração da frase.",
         "acceptance_criteria": [
-          "Campo de avaliação aparece somente após frase gerada com sucesso",
-          "Nota pode ser selecionada entre 0 e 5, inclusive",
-          "Interface é responsiva e acessível"
+          "Aceita apenas valores inteiros entre 0 e 5",
+          "Acessível via teclado e leitores de tela",
+          "Envia nota ao backend ao confirmar"
         ]
       },
       {
         "id": "FR-002",
-        "title": "Submissão da nota para backend",
-        "description": "Ao selecionar a nota, o usuário deve poder enviar a avaliação para o backend via endpoint seguro.",
+        "title": "API para Receber Avaliação",
+        "description": "Criar endpoint POST /api/phrases/rating para receber nota associada ao usuário e frase.",
         "acceptance_criteria": [
-          "Nota enviada associada à frase gerada e ao usuário autenticado",
-          "Resposta do servidor confirma sucesso ou detalha erro",
-          "Validação da nota no backend (0 a 5, inteiro)"
+          "Valida nota entre 0 e 5",
+          "Resposta 200 OK em sucesso",
+          "Resposta 400 para notas inválidas",
+          "Autenticação obrigatória"
         ]
       },
       {
         "id": "FR-003",
-        "title": "Persistência da nota no banco de dados",
-        "description": "O backend deve armazenar a nota da avaliação junto com a frase gerada e o usuário que avaliou.",
+        "title": "Persistência da Nota",
+        "description": "Armazenar nota no banco relacionando usuário, frase e timestamp.",
         "acceptance_criteria": [
-          "Nota armazenada criptografada em banco PostgreSQL",
-          "Relacionamento claro entre frase, usuário e nota",
-          "Dados disponíveis para consulta futura"
+          "Nota armazenada com referência ao usuário autenticado",
+          "Registro da frase avaliada e timestamp",
+          "Integridade referencial garantida"
         ]
       },
       {
         "id": "NFR-001",
         "category": "Performance",
-        "requirement": "Resposta do endpoint de submissão da nota em até 500ms no P95",
-        "metric": "Medição via logs e CloudWatch"
+        "requirement": "Resposta do endpoint em menos de 500ms no P95",
+        "metric": "Medição via CloudWatch e tracing distribuído"
       },
       {
         "id": "NFR-002",
         "category": "Segurança",
-        "requirement": "Autenticação obrigatória para submissão; dados criptografados em repouso e trânsito",
-        "metric": "Auditoria de segurança e revisão de código"
+        "requirement": "Autenticação obrigatória e validação rigorosa dos dados",
+        "metric": "Taxa de rejeição de requisições inválidas e logs de autenticação"
       },
       {
         "id": "NFR-003",
         "category": "Privacidade",
-        "requirement": "Tratamento conforme LGPD, minimizando exposição e acesso controlado aos dados",
-        "metric": "Revisão de compliance e logs de acesso"
+        "requirement": "Não armazenar dados pessoais além do necessário",
+        "metric": "Auditoria de dados armazenados e conformidade com LGPD"
       },
       {
         "id": "NFR-004",
+        "category": "Escalabilidade",
+        "requirement": "Serviço stateless para permitir escala horizontal",
+        "metric": "Capacidade de instanciar múltiplas réplicas sem conflito"
+      },
+      {
+        "id": "NFR-005",
         "category": "Observabilidade",
-        "requirement": "Logs estruturados JSON para submissão e erros; métricas de uso e tracing do fluxo",
-        "metric": "Dashboards CloudWatch e alertas configurados"
+        "requirement": "Logs estruturados JSON e métricas disponíveis no CloudWatch",
+        "metric": "Cobertura de logs e dashboards configurados"
       }
     ],
     "estimated_effort_hours": 56,
@@ -94,36 +102,30 @@
         "description": "Usuários podem não utilizar o campo de avaliação, reduzindo dados coletados",
         "likelihood": "Média",
         "impact": "Médio",
-        "mitigation": "Design intuitivo e possível lembrete amigável para avaliação"
+        "mitigation": "Design UX atrativo e comunicação clara da importância da avaliação"
       },
       {
-        "description": "Submissão de notas inválidas ou ataques de spam",
+        "description": "Submissão de notas inválidas ou ataques de injeção",
         "likelihood": "Baixa",
-        "impact": "Médio",
+        "impact": "Alto",
         "mitigation": "Validação rigorosa no backend e autenticação obrigatória"
       },
       {
-        "description": "Impacto na performance do sistema pela nova funcionalidade",
+        "description": "Aumento de carga no backend por chamadas simultâneas ao endpoint de avaliação",
         "likelihood": "Baixa",
-        "impact": "Baixo",
-        "mitigation": "Monitoramento contínuo e otimização do endpoint"
+        "impact": "Médio",
+        "mitigation": "Monitoramento e escalabilidade horizontal conforme necessidade"
       }
     ],
     "acceptance_criteria": [
-      "Campo de avaliação aparece somente após frase gerada com sucesso",
-      "Nota pode ser selecionada entre 0 e 5, inclusive",
-      "Interface é responsiva e acessível",
-      "Nota enviada associada à frase gerada e ao usuário autenticado",
-      "Resposta do servidor confirma sucesso ou detalha erro",
-      "Validação da nota no backend (0 a 5, inteiro)",
-      "Nota armazenada criptografada em banco PostgreSQL",
-      "Relacionamento claro entre frase, usuário e nota",
-      "Dados disponíveis para consulta futura",
-      "Resposta do endpoint de submissão da nota em até 500ms no P95",
-      "Autenticação obrigatória para submissão; dados criptografados em repouso e trânsito",
-      "Tratamento conforme LGPD, minimizando exposição e acesso controlado aos dados",
-      "Logs estruturados JSON para submissão e erros; métricas de uso e tracing do fluxo"
+      "Campo de avaliação aceita apenas valores inteiros entre 0 e 5 e é acessível",
+      "Endpoint POST /api/phrases/rating valida nota, exige autenticação e responde adequadamente",
+      "Notas são armazenadas com referência ao usuário, frase e timestamp garantindo integridade",
+      "Resposta do endpoint ocorre em menos de 500ms no P95",
+      "Logs estruturados e métricas de latência e erros estão disponíveis para monitoramento",
+      "Taxa de submissão de avaliações é >= 80% dos usuários que geram frases",
+      "100% das notas armazenadas estão entre 0 e 5 conforme auditoria"
     ]
   },
-  "duration": "39800ms"
+  "duration": "35019ms"
 }
