@@ -182,10 +182,4 @@ const server = app.listen(PORT, () => {
   }
 });
 
-
-[object Object]
-
-
-[object Object]
-
 export default server;
