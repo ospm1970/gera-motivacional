@@ -1,20 +1,252 @@
 {
   "status": "completed",
   "result": {
-    "metadata": {
-      "generated_at": "2026-04-20T15:16:42.873Z"
-    },
+    "trigger_type": "feature",
     "specification": {
-      "title": "Specification",
-      "description": "permitir que o usuário avalie frases motivacionais geradas pela aplicação com notas de 0 a 5 na tela onde as frases são apresentadas\n\n## Contexto do Repositório\n## Análise do Repositório\n\n**Tipo de Projeto**: nodejs-express\n\n**Diretórios**: pipeline-output, public, test\n\n**Dependências Principais**: cors, dotenv, express, express-rate-limit, express-validator\n\n**Endpoints Encontrados**:\n- POST /api/phrases\n- GET /api/history\n- GET /health\n- GET *\n\n**Funções Principais**:\n- generateMotivationalPhrase(words)\n\n**Padrões Detectados**: middleware, validation, error-handling, authentication, database, external-api\n\n",
+      "project_name": "Avaliação de Frases Geradas",
+      "description": "Adicionar na tela de resultado de geração de frases um campo para que o usuário possa avaliar as frases geradas pelo sistema com uma nota de 0 a 5.",
       "objectives": [
-        "permitir que o usuário avalie frases motivacionais geradas pela aplicação com notas de 0 a 5 na tela onde as frases são apresentadas\n\n## Contexto do Repositório\n## Análise do Repositório\n\n**Tipo de Projeto**: nodejs-express\n\n**Diretórios**: pipeline-output, public, test\n\n**Dependências Principais**: cors, dotenv, express, express-rate-limit, express-validator\n\n**Endpoints Encontrados**:\n- POST /api/phrases\n- GET /api/history\n- GET /health\n- GET *\n\n**Funções Principais**:\n- generateMotivationalPhrase(words)\n\n**Padrões Detectados**: middleware, validation, error-handling, authentication, database, external-api\n\n"
+        "Permitir que o usuário avalie as frases geradas com uma nota numérica entre 0 e 5",
+        "Registrar a avaliação para possível análise futura de qualidade das frases",
+        "Garantir que a interface seja intuitiva e acessível para a avaliação",
+        "Integrar a avaliação ao backend para persistência segura dos dados"
+      ],
+      "target_users": "todos",
+      "journey_context": "Jornada do usuário na geração e avaliação de frases motivacionais"
+    },
+    "principles": {
+      "privacy_by_design": "A avaliação será armazenada vinculada ao usuário autenticado ou anonimamente, garantindo que dados pessoais não sejam expostos indevidamente. Nenhum dado sensível será coletado além da nota numérica.",
+      "security_by_design": "Autenticação será verificada para associar avaliações ao usuário quando aplicável. A API aceitará apenas notas válidas (0 a 5) e fará validação rigorosa. Dados em trânsito serão criptografados via HTTPS. Nenhum segredo será exposto no código.",
+      "business_knowledge_preservation": "Não aplicável, pois não há migração de código legado neste requisito.",
+      "performance": "O endpoint de submissão da nota deve responder em menos de 500ms no P95 para manter fluidez na experiência do usuário.",
+      "scalability": "O serviço será stateless, armazenando avaliações no banco de dados. Cache não é necessário para avaliação, mas Redis pode ser usado para otimizações futuras. Não há necessidade atual de filas para este fluxo.",
+      "observability": "Logs estruturados JSON serão gerados para submissão de avaliações, incluindo sucesso e falhas. Métricas de chamadas ao endpoint serão enviadas para CloudWatch. Tracing será aplicado para rastrear latência."
+    },
+    "functional_requirements": [
+      {
+        "id": "FR-001",
+        "title": "Campo de avaliação na tela de frases",
+        "description": "Após a geração das frases, exibir um campo de input (ex: slider ou select) para o usuário informar uma nota de 0 a 5 para as frases geradas.",
+        "acceptance_criteria": [
+          "O campo de avaliação só aparece após as frases serem exibidas",
+          "O usuário pode escolher uma nota inteira entre 0 e 5",
+          "O campo é acessível via teclado e leitor de tela",
+          "A nota pode ser alterada antes da submissão"
+        ]
+      },
+      {
+        "id": "FR-002",
+        "title": "Submissão da nota para backend",
+        "description": "Ao confirmar a nota, o sistema envia a avaliação para o backend via API REST.",
+        "acceptance_criteria": [
+          "A nota enviada é validada no backend para estar entre 0 e 5",
+          "A avaliação é armazenada com timestamp e, se disponível, usuário autenticado",
+          "Resposta da API confirma sucesso ou retorna erro com mensagem clara",
+          "Em caso de erro, o frontend exibe mensagem amigável e permite nova tentativa"
+        ]
+      },
+      {
+        "id": "FR-003",
+        "title": "Persistência da avaliação",
+        "description": "As avaliações devem ser armazenadas em banco de dados relacional para análises futuras.",
+        "acceptance_criteria": [
+          "Tabela ou coleção específica para avaliações criada com campos: id, nota, timestamp, usuário (opcional)",
+          "Dados armazenados com segurança e integridade",
+          "Não armazenar dados pessoais além do necessário para associação"
+        ]
+      }
+    ],
+    "non_functional_requirements": [
+      {
+        "id": "NFR-001",
+        "category": "Performance",
+        "requirement": "Endpoint de submissão da nota deve responder em até 500ms no P95",
+        "metric": "Medição via logs e métricas CloudWatch"
+      },
+      {
+        "id": "NFR-002",
+        "category": "Segurança",
+        "requirement": "Validação rigorosa da nota no backend para evitar dados inválidos ou maliciosos",
+        "metric": "Taxa de rejeição de requisições inválidas"
+      },
+      {
+        "id": "NFR-003",
+        "category": "Privacidade",
+        "requirement": "Não armazenar dados pessoais desnecessários na avaliação",
+        "metric": "Auditoria de banco de dados e logs"
+      },
+      {
+        "id": "NFR-004",
+        "category": "Observabilidade",
+        "requirement": "Logs estruturados JSON para submissão e erros, métricas enviadas para CloudWatch",
+        "metric": "Cobertura de logs e métricas monitoradas"
+      }
+    ],
+    "technical_plan": {
+      "tech_stack": {
+        "frontend": "React com integração na tela existente de geração de frases",
+        "backend": "Node.js + Express com novo endpoint POST /api/phrases/rating",
+        "database": "PostgreSQL para persistência da avaliação",
+        "queues": "Não aplicável",
+        "infrastructure": "Hospedagem atual em AWS ECS, uso de RDS para banco",
+        "secrets": "AWS Secrets Manager para credenciais do banco"
+      },
+      "architecture": "Adicionar componente de UI para avaliação no frontend. Criar novo endpoint REST para receber nota, validar e persistir no banco. Garantir autenticação e autorização conforme contexto do usuário. Logs estruturados e métricas para observabilidade.",
+      "migration_plan": "Não aplicável",
+      "key_integrations": [
+        "Integração frontend-backend via REST API",
+        "Persistência em PostgreSQL via ORM ou query builder"
       ]
     },
-    "principles": [],
-    "technical_plan": {},
-    "task_breakdown": [],
-    "success_criteria": []
+    "task_breakdown": {
+      "epics": [
+        {
+          "id": "E-001",
+          "title": "Avaliação de frases geradas",
+          "description": "Implementar funcionalidade para o usuário avaliar frases geradas pelo sistema",
+          "features": [
+            {
+              "id": "F-001",
+              "title": "Campo de avaliação na interface",
+              "tasks": [
+                {
+                  "id": "T-001",
+                  "title": "Design e implementação do campo de nota (0-5) na tela de frases",
+                  "description": "Criar componente React acessível para avaliação após geração das frases",
+                  "effort_days": 2,
+                  "dependencies": [],
+                  "priority": "Alta"
+                },
+                {
+                  "id": "T-002",
+                  "title": "Validação frontend da nota selecionada",
+                  "description": "Garantir que somente valores entre 0 e 5 possam ser enviados",
+                  "effort_days": 1,
+                  "dependencies": [
+                    "T-001"
+                  ],
+                  "priority": "Alta"
+                }
+              ]
+            },
+            {
+              "id": "F-002",
+              "title": "API para submissão da avaliação",
+              "tasks": [
+                {
+                  "id": "T-003",
+                  "title": "Criar endpoint POST /api/phrases/rating",
+                  "description": "Endpoint para receber nota, validar e persistir avaliação",
+                  "effort_days": 2,
+                  "dependencies": [],
+                  "priority": "Alta"
+                },
+                {
+                  "id": "T-004",
+                  "title": "Implementar validação da nota no backend",
+                  "description": "Garantir que a nota esteja entre 0 e 5 e que usuário esteja autenticado se aplicável",
+                  "effort_days": 1,
+                  "dependencies": [
+                    "T-003"
+                  ],
+                  "priority": "Alta"
+                },
+                {
+                  "id": "T-005",
+                  "title": "Persistir avaliação no banco de dados",
+                  "description": "Criar tabela e lógica para armazenar avaliações com timestamp e usuário opcional",
+                  "effort_days": 2,
+                  "dependencies": [
+                    "T-004"
+                  ],
+                  "priority": "Alta"
+                }
+              ]
+            },
+            {
+              "id": "F-003",
+              "title": "Feedback para o usuário",
+              "tasks": [
+                {
+                  "id": "T-006",
+                  "title": "Implementar feedback visual de sucesso e erro na submissão",
+                  "description": "Mostrar mensagens claras para o usuário após enviar a nota",
+                  "effort_days": 1,
+                  "dependencies": [
+                    "T-002",
+                    "T-003"
+                  ],
+                  "priority": "Média"
+                }
+              ]
+            },
+            {
+              "id": "F-004",
+              "title": "Observabilidade e monitoramento",
+              "tasks": [
+                {
+                  "id": "T-007",
+                  "title": "Implementar logs estruturados para submissão de avaliações",
+                  "description": "Registrar sucesso e falhas com detalhes para análise",
+                  "effort_days": 1,
+                  "dependencies": [
+                    "T-003"
+                  ],
+                  "priority": "Média"
+                },
+                {
+                  "id": "T-008",
+                  "title": "Configurar métricas no CloudWatch para chamadas ao endpoint",
+                  "description": "Monitorar latência e taxa de erros",
+                  "effort_days": 1,
+                  "dependencies": [
+                    "T-007"
+                  ],
+                  "priority": "Média"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "success_criteria": [
+      {
+        "metric": "Taxa de submissão de avaliações",
+        "target": ">= 80% dos usuários que geram frases avaliam",
+        "measurement": "Análise de dados no banco e logs"
+      },
+      {
+        "metric": "Tempo de resposta do endpoint de avaliação",
+        "target": "< 500ms no P95",
+        "measurement": "Métricas CloudWatch"
+      },
+      {
+        "metric": "Taxa de erros na submissão",
+        "target": "< 1% das requisições",
+        "measurement": "Métricas CloudWatch e logs"
+      }
+    ],
+    "risks": [
+      {
+        "description": "Usuários podem não utilizar o campo de avaliação, reduzindo dados coletados",
+        "likelihood": "Média",
+        "impact": "Médio",
+        "mitigation": "Tornar o campo visualmente destacado e de fácil uso, com mensagens incentivando avaliação"
+      },
+      {
+        "description": "Submissão de notas inválidas ou ataques maliciosos via API",
+        "likelihood": "Baixa",
+        "impact": "Alto",
+        "mitigation": "Validação rigorosa no backend, autenticação e monitoramento de padrões anômalos"
+      },
+      {
+        "description": "Impacto na performance do sistema devido a nova funcionalidade",
+        "likelihood": "Baixa",
+        "impact": "Médio",
+        "mitigation": "Monitorar métricas e otimizar consultas e endpoints conforme necessário"
+      }
+    ]
   },
-  "duration": "35183ms"
+  "duration": "37669ms"
 }

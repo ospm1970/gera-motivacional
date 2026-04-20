@@ -2,31 +2,30 @@
   "status": "completed",
   "result": {
     "deployment_steps": [
-      "Pull latest code from repository",
-      "Install backend dependencies using npm install",
-      "Install frontend dependencies using npm install",
-      "Build frontend assets if required",
-      "Run backend server with updated code",
-      "Run frontend development server or deploy frontend build",
-      "Verify environment variables are set correctly, including JWT_SECRET",
-      "Restart services if necessary"
+      "Build and test the NestJS backend module 'avaliacoes' with TypeORM integration.",
+      "Build and test the Next.js frontend page 'frases.tsx' with accessibility features.",
+      "Deploy the backend service with the new Avaliacao entity and REST endpoint secured by JwtAuthGuard.",
+      "Deploy the frontend with the evaluation UI accessible after phrase generation.",
+      "Configure CloudWatch to collect structured JSON logs and custom metrics for the POST /avaliacoes endpoint.",
+      "Set up CORS restrictions in backend for production environment.",
+      "Verify environment variables are securely stored in AWS Secrets Manager.",
+      "Run load tests to ensure P95 response time < 500ms for the evaluation submission endpoint.",
+      "Monitor logs and metrics in CloudWatch for anomalies and performance.",
+      "Perform accessibility audit on frontend evaluation components to meet WCAG standards."
     ],
-    "environment": "Node.js backend with Express, MongoDB database, React frontend",
+    "environment": "Production environment with PostgreSQL database, AWS CloudWatch for logging and metrics, secured backend with JWT authentication, and Next.js frontend served with SSR and CSR capabilities.",
     "health_checks": [
-      "Verify backend API /api/ratings responds with 200 status",
-      "Verify frontend loads without errors",
-      "Check database connection is active",
-      "Test authentication middleware with valid and invalid tokens",
-      "Submit a test rating and verify it is saved and retrieved correctly"
+      "Verify backend REST endpoint /avaliacoes responds with HTTP 200 for valid requests.",
+      "Check CloudWatch metrics for response time and error rates remain within thresholds.",
+      "Confirm logs are generated in structured JSON format for all evaluation submissions.",
+      "Validate frontend loads correctly and evaluation UI is accessible and functional.",
+      "Ensure JWT authentication guard is active and rejects unauthorized requests.",
+      "Run automated tests for AvaliacoesService and AvaliacoesController.",
+      "Monitor database connectivity and successful persistence of Avaliacao records."
     ],
-    "rollback_plan": [
-      "Revert to previous stable commit in version control",
-      "Reinstall dependencies if needed",
-      "Restart backend and frontend services",
-      "Verify system functionality with health checks"
-    ],
-    "estimated_deployment_time_minutes": 15,
+    "rollback_plan": "If critical errors or performance regressions occur, revert backend and frontend deployments to the previous stable version. Disable the new evaluation feature flag if applicable. Restore database schema if any migration issues arise. Notify stakeholders and investigate logs and metrics to identify root cause before redeploying fixes.",
+    "estimated_deployment_time_minutes": 30,
     "deployment_approved": true
   },
-  "duration": "19531ms"
+  "duration": "22910ms"
 }
