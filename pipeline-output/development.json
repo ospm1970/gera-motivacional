@@ -2,24 +2,19 @@
   "status": "completed",
   "result": {
     "files": [
-      {
-        "name": "evaluation_component.js",
-        "content": "import React, { useState } from 'react';\n\nfunction EvaluationComponent({ phraseId, userId, onEvaluationSubmitted }) {\n  const [rating, setRating] = useState(null);\n  const [message, setMessage] = useState('');\n  const [error, setError] = useState('');\n  const [isSubmitting, setIsSubmitting] = useState(false);\n\n  const handleSubmit = async () => {\n    if (rating === null || rating < 0 || rating > 5) {\n      setError('Por favor, selecione uma nota entre 0 e 5.');\n      return;\n    }\n    setIsSubmitting(true);\n    setError('');\n    setMessage('');\n    try {\n      const response = await fetch('/api/evaluations', {\n        method: 'POST',\n        headers: {\n          'Content-Type': 'application/json'\n        },\n        body: JSON.stringify({\n          phraseId,\n          userId,\n          rating\n        })\n      });\n      const data = await response.json();\n      if (response.ok) {\n        setMessage('Avaliação armazenada com sucesso.');\n        onEvaluationSubmitted && onEvaluationSubmitted(rating);\n      } else {\n        setError(data.error || 'Erro ao enviar avaliação.');\n      }\n    } catch (err) {\n      setError('Erro de rede ao enviar avaliação.');\n    } finally {\n      setIsSubmitting(false);\n    }\n  };\n\n  if (!phraseId) {\n    return null;\n  }\n\n  return (\n    <div aria-live=\"polite\" style={{ marginTop: '1rem' }}>\n      <label htmlFor=\"rating-select\">Avalie a frase (0 a 5):</label>\n      <select\n        id=\"rating-select\"\n        value={rating !== null ? rating : ''}\n        onChange={e => setRating(Number(e.target.value))}\n        aria-required=\"true\"\n        disabled={isSubmitting}\n      >\n        <option value=\"\" disabled>\n          Selecione\n        </option>\n        {[0, 1, 2, 3, 4, 5].map(num => (\n          <option key={num} value={num}>\n            {num}\n          </option>\n        ))}\n      </select>\n      <button onClick={handleSubmit} disabled={isSubmitting || rating === null} style={{ marginLeft: '0.5rem' }}>\n        Enviar\n      </button>\n      {message && <p role=\"alert\" style={{ color: 'green' }}>{message}</p>}\n      {error && <p role=\"alert\" style={{ color: 'red' }}>{error}</p>}\n    </div>\n  );\n}\n\nexport default EvaluationComponent;"
-      },
-      {
-        "name": "backend_evaluation_handler.js",
-        "content": "const express = require('express');\nconst router = express.Router();\nconst { body, validationResult } = require('express-validator');\nconst authenticate = require('./middleware/authenticate');\nconst db = require('./db'); // Assume a module to interact with PostgreSQL\n\nrouter.post(\n  '/evaluations',\n  authenticate,\n  body('rating').isInt({ min: 0, max: 5 }),\n  body('phraseId').isString().notEmpty(),\n  async (req, res) => {\n    const errors = validationResult(req);\n    if (!errors.isEmpty()) {\n      return res.status(400).json({ error: 'Nota inválida ou dados ausentes.' });\n    }\n\n    const { rating, phraseId } = req.body;\n    const userId = req.user.id;\n\n    try {\n      // Store encrypted rating in PostgreSQL\n      // Assuming db.query uses parameterized queries and encryption handled at DB or app layer\n      await db.query(\n        'INSERT INTO evaluations (phrase_id, user_id, rating_encrypted) VALUES ($1, $2, pgp_sym_encrypt($3::text, current_setting(''app.encryption_key'')))',\n        [phraseId, userId, rating.toString()]\n      );\n\n      res.json({ message: 'Avaliação armazenada com sucesso.' });\n    } catch (err) {\n      console.error('Erro ao armazenar avaliação:', err);\n      res.status(500).json({ error: 'Erro interno do servidor.' });\n    }\n  }\n);\n\nmodule.exports = router;"
-      }
+      "server.js"
     ],
-    "code_quality_score": 9.5,
+    "code_quality_score": 9,
     "dependencies": [
-      "react",
+      "cors",
+      "dotenv",
       "express",
+      "express-rate-limit",
       "express-validator",
-      "pg",
-      "pg-promise",
-      "jsonwebtoken"
+      "helmet",
+      "openai",
+      "sanitize-html"
     ]
   },
-  "duration": "72858ms"
+  "duration": "49012ms"
 }
