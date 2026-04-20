@@ -1,42 +1,31 @@
 {
   "requirement": "Alterar a tela do projeto para depois da geração das frases exista um campo onde o usuário posso dar uma nota de 0 a 5 para as frases geradas pelo sistema.",
-  "status": "completed",
-  "createdAt": "2026-04-20T16:07:50.943Z",
-  "completedAt": "2026-04-20T16:14:21.946Z",
+  "status": "blocked_by_review",
+  "createdAt": "2026-04-20T17:16:42.807Z",
   "stages": [
     {
       "name": "specification",
       "status": "completed",
-      "duration": "37669ms"
+      "duration": "45467ms"
     },
     {
       "name": "analysis",
       "status": "completed",
-      "duration": "44900ms"
+      "duration": "39800ms"
     },
     {
       "name": "ux_design",
       "status": "completed",
-      "duration": "12126ms"
+      "duration": "11409ms"
     },
     {
       "name": "development",
       "status": "completed",
-      "duration": "57415ms"
+      "duration": "72858ms"
     },
     {
       "name": "code_review",
       "status": "completed"
-    },
-    {
-      "name": "qa",
-      "status": "completed",
-      "duration": "17201ms"
-    },
-    {
-      "name": "deployment",
-      "status": "completed",
-      "duration": "22910ms"
     }
   ]
 }
