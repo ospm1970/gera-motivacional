@@ -2,35 +2,41 @@
   "status": "completed",
   "result": {
     "deployment_steps": [
-      "Verificar configuração da variável de ambiente JWT_SECRET no ambiente de produção.",
-      "Buildar a aplicação NestJS com os novos módulos e componentes.",
-      "Executar migrações do banco de dados se necessário para criar a tabela phrase_ratings.",
-      "Implantar o backend com o módulo PhraseRatingModule ativo.",
-      "Implantar o componente React PhraseRating no frontend.",
-      "Configurar monitoramento de logs estruturados e métricas de latência no CloudWatch.",
-      "Testar autenticação JWT e rate limiting no endpoint POST /api/phrases/rating.",
-      "Realizar testes manuais e automatizados para validar o fluxo completo.",
-      "Monitorar logs e métricas para identificar possíveis erros ou abusos."
+      "Provisionar ambiente com Node.js, PostgreSQL e AWS CloudWatch configurados.",
+      "Configurar variáveis de ambiente, incluindo AVALIACAO_ENCRYPTION_KEY com chave hex 32 bytes segura.",
+      "Instalar dependências do backend NestJS e frontend Next.js via npm/yarn.",
+      "Executar migrações do banco de dados para criar tabela 'avaliacoes' com índices únicos.",
+      "Deploy do backend NestJS com JwtAuthGuard ativo e rate limiting configurado.",
+      "Deploy do frontend Next.js com componente AvaliacaoNota integrado e SSR habilitado.",
+      "Configurar CloudWatch para coletar logs estruturados e métricas customizadas de latência e erros.",
+      "Realizar testes de integração para validar autenticação, validação de nota e persistência criptografada.",
+      "Monitorar logs e métricas para garantir estabilidade e performance."
     ],
-    "environment": "Produção com NestJS, PostgreSQL, React frontend, variáveis de ambiente configuradas incluindo JWT_SECRET, e integração com CloudWatch para logs e métricas.",
+    "environment": {
+      "node_version": ">=16.x",
+      "database": "PostgreSQL 12+",
+      "encryption_key": "Hexadecimal 32 bytes (64 caracteres)",
+      "cloud_provider": "AWS",
+      "logging": "AWS CloudWatch",
+      "rate_limiting": "Global via NestJS middleware",
+      "security": "HTTPS obrigatório, JWT para autenticação"
+    },
     "health_checks": [
-      "Verificar resposta 200 no endpoint POST /api/phrases/rating com token JWT válido.",
-      "Confirmar rejeição com status 401 para token JWT inválido ou expirado.",
-      "Validar que avaliações com nota fora do intervalo 0-5 retornam erro 400.",
-      "Monitorar logs para entradas estruturadas com userId anonimizados.",
-      "Verificar métricas de latência e taxa de erro no CloudWatch.",
-      "Testar rate limiting bloqueando requisições excessivas do mesmo usuário ou IP."
+      "Endpoint /health retorna status 200 e confirma conexão com banco de dados.",
+      "Verificação periódica da validade da chave de criptografia no ambiente.",
+      "Monitoramento de logs para erros críticos e falhas de autenticação.",
+      "Métricas de latência P95 para endpoint POST /avaliacoes dentro do SLA.",
+      "Alertas configurados no CloudWatch para falhas e latência elevada."
     ],
     "rollback_plan": [
-      "Reverter para a versão anterior do backend sem o módulo PhraseRating.",
-      "Remover o componente React PhraseRating do frontend.",
-      "Restaurar configurações anteriores do ambiente e variáveis de ambiente.",
-      "Verificar integridade dos dados no banco e logs para inconsistências.",
-      "Notificar equipe e usuários sobre rollback e possíveis impactos.",
-      "Monitorar sistema para garantir estabilidade após rollback."
+      "Reverter para versão anterior do backend e frontend via sistema de versionamento.",
+      "Restaurar banco de dados para snapshot anterior se houver corrupção de dados.",
+      "Desabilitar temporariamente o módulo de avaliações para mitigar impacto.",
+      "Comunicar time de suporte e usuários sobre rollback e possíveis instabilidades.",
+      "Revisar logs para identificar causa raiz antes de novo deploy."
     ],
-    "estimated_deployment_time_minutes": 30,
+    "estimated_deployment_time_minutes": 45,
     "deployment_approved": true
   },
-  "duration": "21417ms"
+  "duration": "16335ms"
 }

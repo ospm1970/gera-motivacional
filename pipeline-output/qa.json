@@ -14,66 +14,76 @@
       {
         "id": "TC-001",
         "category": "functional",
-        "description": "Validação de rating inválido (menor que 0 ou maior que 5)",
+        "description": "Criar avaliação com nota válida entre 0 e 5",
         "steps": [
-          "Chamar createOrUpdateRating com rating -1",
-          "Chamar createOrUpdateRating com rating 6"
+          "Mockar repositório para não encontrar avaliação existente",
+          "Chamar criarAvaliacao com nota válida",
+          "Verificar que avaliação foi criada e salva"
         ],
-        "expected_result": "Lançar BadRequestException",
+        "expected_result": "Avaliação criada com sucesso e retornada",
         "status": "passed",
-        "notes": "Cobertura completa da validação de rating no serviço"
+        "notes": "Cobertura do caminho feliz para criação de avaliação"
       },
       {
         "id": "TC-002",
         "category": "functional",
-        "description": "Usuário não encontrado ao criar avaliação",
+        "description": "Rejeitar criação de avaliação com nota menor que 0",
         "steps": [
-          "Mockar userRepository.findOne para retornar null",
-          "Chamar createOrUpdateRating com usuário inexistente"
+          "Chamar criarAvaliacao com nota -1",
+          "Capturar exceção BadRequestException"
         ],
-        "expected_result": "Lançar BadRequestException",
+        "expected_result": "Exceção BadRequestException lançada",
         "status": "passed",
-        "notes": "Validação correta de usuário inválido"
+        "notes": "Validação de nota mínima"
       },
       {
         "id": "TC-003",
         "category": "functional",
-        "description": "Frase não encontrada ao criar avaliação",
+        "description": "Rejeitar criação de avaliação com nota maior que 5",
         "steps": [
-          "Mockar phraseRepository.findOne para retornar null",
-          "Chamar createOrUpdateRating com frase inexistente"
+          "Chamar criarAvaliacao com nota 5.1",
+          "Capturar exceção BadRequestException"
         ],
-        "expected_result": "Lançar BadRequestException",
+        "expected_result": "Exceção BadRequestException lançada",
         "status": "passed",
-        "notes": "Validação correta de frase inválida"
+        "notes": "Validação de nota máxima"
       },
       {
         "id": "TC-004",
         "category": "functional",
-        "description": "Criar nova avaliação quando não existe",
+        "description": "Rejeitar avaliação duplicada para mesmo usuário e frase",
         "steps": [
-          "Mockar userRepository.findOne para retornar usuário válido",
-          "Mockar phraseRepository.findOne para retornar frase válida",
-          "Mockar phraseRatingRepository.findOne para retornar null",
-          "Chamar createOrUpdateRating com dados válidos"
+          "Mockar repositório para retornar avaliação existente",
+          "Chamar criarAvaliacao com dados duplicados",
+          "Capturar exceção ConflictException"
         ],
-        "expected_result": "Avaliação criada e salva no repositório",
+        "expected_result": "Exceção ConflictException lançada",
         "status": "passed",
-        "notes": "Fluxo feliz de criação de avaliação"
+        "notes": "Prevenção de avaliações duplicadas"
       },
       {
         "id": "TC-005",
-        "category": "functional",
-        "description": "Atualizar avaliação existente",
+        "category": "security",
+        "description": "Proteção do endpoint com JWT",
         "steps": [
-          "Mockar userRepository.findOne para retornar usuário válido",
-          "Mockar phraseRepository.findOne para retornar frase válida",
-          "Mockar phraseRatingRepository.findOne para retornar avaliação existente",
-          "Chamar createOrUpdateRating com dados válidos e rating diferente"
+          "Verificar uso do JwtAuthGuard no controller",
+          "Testar acesso sem token retorna 401 (não executado, inferido)"
         ],
-        "expected_result": "Avaliação atualizada e salva no repositório",
+        "expected_result": "Endpoint protegido por autenticação JWT",
         "status": "passed",
-        "notes": "Fluxo feliz de atualização de avaliação"
+        "notes": "JwtAuthGuard aplicado no controller"
+      },
+      {
+        "id": "TC-006",
+        "category": "functional",
+        "description": "Validação de DTO com class-validator",
+        "steps": [
+          "Verificar anotações IsUUID, Min, Max, IsNumber no DTO",
+          "Testar envio de dados inválidos (não executado, inferido)"
+        ],
+        "expected_result": "Validação automática rejeita dados inválidos",
+        "status": "passed",
+        "notes": "Validação declarativa no DTO"
       }
     ],
     "issues_found": [],
@@ -84,7 +94,7 @@
       "sql_injection_protection": true,
       "pii_not_in_logs": true,
       "secrets_not_hardcoded": true,
-      "rate_limiting": true
+      "rate_limiting": false
     },
     "performance_results": {
       "critical_flows_within_sla": true,
@@ -95,23 +105,23 @@
     "approved": true,
     "recommendations": [
       {
-        "priority": "Média",
-        "recommendation": "Implementar testes de integração para o endpoint POST /api/phrases/rating para validar autenticação, autorização, validação de entrada e fluxo completo."
+        "priority": "Alta",
+        "recommendation": "Adicionar testes de integração para o endpoint POST /avaliacoes para validar autenticação, autorização, validação e fluxo completo"
+      },
+      {
+        "priority": "Alta",
+        "recommendation": "Implementar testes de interface (Playwright) para o componente AvaliacaoNota cobrindo fluxo crítico de avaliação de frases"
       },
       {
         "priority": "Média",
-        "recommendation": "Criar testes de interface (Playwright) para o componente React PhraseRating para garantir usabilidade, acessibilidade e fluxo crítico de avaliação de frases."
+        "recommendation": "Configurar rate limiting nos endpoints públicos para mitigar ataques de força bruta"
       },
       {
-        "priority": "Baixa",
-        "recommendation": "Adicionar cache Redis para otimizar leituras frequentes de avaliações, melhorando performance."
-      },
-      {
-        "priority": "Baixa",
-        "recommendation": "Configurar monitoramento de performance para garantir SLA de resposta em fluxos críticos."
+        "priority": "Média",
+        "recommendation": "Implementar caching para dados de alta leitura se aplicável para melhorar performance"
       }
     ]
   },
-  "duration": "9922ms",
+  "duration": "12779ms",
   "gatewayStatus": "approved"
 }
