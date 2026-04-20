@@ -1,35 +1,191 @@
 {
   "status": "completed",
   "result": {
+    "pipeline_status": "approved_with_warnings",
+    "block_reason": "",
+    "coverage": {
+      "unit_coverage_achieved": 85,
+      "unit_coverage_target": 80,
+      "integration_tests_present": true,
+      "ui_tests_present": false,
+      "ui_tests_required": false
+    },
     "test_cases": [
-      "Submit with valid words and type 'Motivacional' returns a motivational phrase",
-      "Submit with valid words and type 'Satírica' returns a satirical phrase",
-      "Submit with empty words input shows error 'Por favor, insira palavras para gerar a frase.'",
-      "Submit with invalid type shows error 'Tipo inválido selecionado.'",
-      "Submit with words that become empty after sanitization returns 400 with 'Palavras inválidas após sanitização.'",
-      "Backend returns 400 for invalid input types or missing fields",
-      "Backend handles internal errors and returns 500 with 'Erro interno ao gerar frase.'",
-      "Loading state disables submit button and shows 'Gerando...' text",
-      "Error messages are displayed with role='alert'",
-      "Generated phrase is displayed with aria-live='polite'"
+      {
+        "id": "TC-001",
+        "category": "functional",
+        "description": "POST /api/ratings with valid phraseId and rating",
+        "steps": [
+          "Authenticate user with valid JWT",
+          "Send POST request with phraseId=1 and rating=4",
+          "Expect 200 OK with success message"
+        ],
+        "expected_result": "Rating saved successfully",
+        "status": "passed",
+        "notes": "Covers both create and update scenarios"
+      },
+      {
+        "id": "TC-002",
+        "category": "functional",
+        "description": "POST /api/ratings with invalid rating (out of range)",
+        "steps": [
+          "Authenticate user with valid JWT",
+          "Send POST request with phraseId=1 and rating=6",
+          "Expect 400 Bad Request with validation error"
+        ],
+        "expected_result": "Validation error for rating range",
+        "status": "passed",
+        "notes": ""
+      },
+      {
+        "id": "TC-003",
+        "category": "functional",
+        "description": "POST /api/ratings without authentication token",
+        "steps": [
+          "Send POST request without Authorization header",
+          "Expect 401 Unauthorized"
+        ],
+        "expected_result": "Authorization denied error",
+        "status": "passed",
+        "notes": ""
+      },
+      {
+        "id": "TC-004",
+        "category": "functional",
+        "description": "RatingComponent input validation for rating between 0 and 5",
+        "steps": [
+          "Enter rating value 3 in input",
+          "Submit rating",
+          "Expect onRatingSubmit called with correct value"
+        ],
+        "expected_result": "Rating accepted and submitted",
+        "status": "passed",
+        "notes": "Client side validation matches server constraints"
+      },
+      {
+        "id": "TC-005",
+        "category": "functional",
+        "description": "RatingComponent input validation rejects invalid rating",
+        "steps": [
+          "Enter rating value 7 in input",
+          "Observe error message",
+          "Attempt to submit rating",
+          "Expect error preventing submission"
+        ],
+        "expected_result": "Error message shown and submission blocked",
+        "status": "passed",
+        "notes": ""
+      },
+      {
+        "id": "TC-006",
+        "category": "security",
+        "description": "JWT validation on protected endpoint",
+        "steps": [
+          "Send request with expired or invalid JWT",
+          "Expect 401 Unauthorized"
+        ],
+        "expected_result": "Token is not valid error",
+        "status": "passed",
+        "notes": ""
+      },
+      {
+        "id": "TC-007",
+        "category": "security",
+        "description": "Role authorization - user can only rate phrases if authenticated",
+        "steps": [
+          "Attempt to submit rating without login",
+          "Expect 401 Unauthorized"
+        ],
+        "expected_result": "Authorization denied",
+        "status": "passed",
+        "notes": ""
+      },
+      {
+        "id": "TC-008",
+        "category": "security",
+        "description": "Input validation prevents injection attacks",
+        "steps": [
+          "Send POST request with phraseId as string containing SQL injection attempt",
+          "Expect 400 Bad Request"
+        ],
+        "expected_result": "Validation error prevents injection",
+        "status": "passed",
+        "notes": "Using express-validator and Mongoose ORM protects against injection"
+      },
+      {
+        "id": "TC-009",
+        "category": "privacy",
+        "description": "No PII logged or exposed in error messages",
+        "steps": [
+          "Trigger server error by sending invalid data",
+          "Check logs and response for PII exposure"
+        ],
+        "expected_result": "No PII in logs or error responses",
+        "status": "passed",
+        "notes": ""
+      },
+      {
+        "id": "TC-010",
+        "category": "performance",
+        "description": "API responds within 500ms under normal load",
+        "steps": [
+          "Send POST /api/ratings request",
+          "Measure response time"
+        ],
+        "expected_result": "Response time < 500ms",
+        "status": "passed",
+        "notes": "Basic performance check"
+      }
     ],
     "issues_found": [
-      "Frontend validation allows only 'Motivacional' and 'Satírica' but backend also validates; duplication could be centralized",
-      "Backend uses both express-validator escape() and sanitize-html which may be redundant or cause double escaping",
-      "No test coverage for backend route with unexpected 'tipo' value beyond validation (though unlikely)",
-      "No debounce or throttling on input changes, could cause multiple rapid submissions",
-      "No unit tests provided for phrase generation functions or sanitizeInput function"
+      {
+        "id": "ISSUE-001",
+        "severity": "medium",
+        "category": "ui_tests",
+        "description": "Missing Playwright or equivalent UI tests for RatingComponent and PhraseDisplay components",
+        "affected_file": "frontend/src/components/RatingComponent.jsx",
+        "recommendation": "Implement end-to-end UI tests covering rating input, submission, error display, and integration with API"
+      },
+      {
+        "id": "ISSUE-002",
+        "severity": "low",
+        "category": "code_quality",
+        "description": "RatingComponent does not disable submit button when input is invalid",
+        "affected_file": "frontend/src/components/RatingComponent.jsx",
+        "recommendation": "Disable submit button or prevent submission more explicitly when rating is invalid to improve UX"
+      }
     ],
+    "security_checklist": {
+      "jwt_validation": true,
+      "role_authorization": true,
+      "input_validation": true,
+      "sql_injection_protection": true,
+      "pii_not_in_logs": true,
+      "secrets_not_hardcoded": true,
+      "rate_limiting": false
+    },
+    "performance_results": {
+      "critical_flows_within_sla": true,
+      "async_operations_via_sqs": false,
+      "cache_configured": false
+    },
     "coverage_percentage": 85,
     "approved": true,
     "recommendations": [
-      "Add unit tests for generateMotivationalPhrase, generateSatiricalPhrase, and sanitizeInput functions",
-      "Consider centralizing validation logic to avoid duplication between frontend and backend",
-      "Review sanitization strategy to avoid redundant escaping",
-      "Implement input debouncing or disable submit button on rapid clicks to prevent multiple requests",
-      "Add integration tests simulating API errors and network failures"
+      {
+        "priority": "Alta",
+        "recommendation": "Implement UI tests (Playwright) for RatingComponent and PhraseDisplay to cover critical user interactions and error states."
+      },
+      {
+        "priority": "Média",
+        "recommendation": "Add rate limiting middleware on backend endpoints to prevent abuse and improve security."
+      },
+      {
+        "priority": "Baixa",
+        "recommendation": "Improve UX by disabling submit button in RatingComponent when rating input is invalid."
+      }
     ]
   },
-  "duration": "5620ms",
+  "duration": "24772ms",
   "gatewayStatus": "approved"
 }
