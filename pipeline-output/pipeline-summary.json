@@ -1,38 +1,38 @@
 {
-  "requirement": "Alterar na tela do projeto o título para Geração de Frases Personalizadas e adicionar uma combobox Tipo da Frase, após a área de digitação das palavras,  com as opções: Motivacional e Satírica. Dependendo da escolha uma frase é gerada de acordo com a escolha.",
+  "requirement": "permitir que o usuário avalie frases motivacionais geradas pela aplicação com notas de 0 a 5 na tela onde as frases são apresentadas",
   "status": "completed",
-  "createdAt": "2026-04-15T19:51:58.914Z",
-  "completedAt": "2026-04-15T19:55:20.593Z",
+  "createdAt": "2026-04-20T15:16:07.685Z",
+  "completedAt": "2026-04-20T15:23:33.686Z",
   "stages": [
     {
       "name": "specification",
       "status": "completed",
-      "duration": "25306ms"
+      "duration": "35183ms"
     },
     {
       "name": "analysis",
       "status": "completed",
-      "duration": "9929ms"
+      "duration": "26903ms"
     },
     {
       "name": "ux_design",
       "status": "completed",
-      "duration": "19276ms"
+      "duration": "20174ms"
     },
     {
       "name": "development",
       "status": "completed",
-      "duration": "20978ms"
+      "duration": "107883ms"
     },
     {
       "name": "qa",
       "status": "completed",
-      "duration": "5620ms"
+      "duration": "24772ms"
     },
     {
       "name": "deployment",
       "status": "completed",
-      "duration": "3669ms"
+      "duration": "19531ms"
     }
   ]
 }

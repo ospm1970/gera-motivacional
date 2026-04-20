@@ -2,24 +2,31 @@
   "status": "completed",
   "result": {
     "deployment_steps": [
-      "Review code and run unit tests for frontend and backend components",
-      "Build frontend React application bundle",
-      "Build and package backend Node.js Express API",
-      "Deploy backend API to production server or container environment",
-      "Deploy frontend static assets to CDN or web server",
-      "Run integration tests to verify frontend-backend communication",
-      "Monitor logs and metrics for errors or performance issues"
+      "Pull latest code from repository",
+      "Install backend dependencies using npm install",
+      "Install frontend dependencies using npm install",
+      "Build frontend assets if required",
+      "Run backend server with updated code",
+      "Run frontend development server or deploy frontend build",
+      "Verify environment variables are set correctly, including JWT_SECRET",
+      "Restart services if necessary"
     ],
-    "environment": "production",
+    "environment": "Node.js backend with Express, MongoDB database, React frontend",
     "health_checks": [
-      "Verify backend API /api/phrases endpoint returns 200 with valid phrase response",
-      "Check frontend loads without errors and UI elements render correctly",
-      "Perform sample phrase generation requests from frontend to backend",
-      "Monitor server logs for errors or warnings during requests"
+      "Verify backend API /api/ratings responds with 200 status",
+      "Verify frontend loads without errors",
+      "Check database connection is active",
+      "Test authentication middleware with valid and invalid tokens",
+      "Submit a test rating and verify it is saved and retrieved correctly"
     ],
-    "rollback_plan": "If critical errors or failures occur post-deployment, revert backend and frontend to previous stable versions using version control and deployment automation tools, then re-run health checks to confirm restoration.",
-    "estimated_deployment_time_minutes": 20,
+    "rollback_plan": [
+      "Revert to previous stable commit in version control",
+      "Reinstall dependencies if needed",
+      "Restart backend and frontend services",
+      "Verify system functionality with health checks"
+    ],
+    "estimated_deployment_time_minutes": 15,
     "deployment_approved": true
   },
-  "duration": "3669ms"
+  "duration": "19531ms"
 }
