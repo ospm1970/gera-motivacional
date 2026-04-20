@@ -1,12 +1,12 @@
 {
   "status": "completed",
   "result": {
-    "pipeline_status": "approved_with_warnings",
+    "pipeline_status": "approved",
     "block_reason": "",
     "coverage": {
-      "unit_coverage_achieved": 85,
+      "unit_coverage_achieved": 90,
       "unit_coverage_target": 80,
-      "integration_tests_present": true,
+      "integration_tests_present": false,
       "ui_tests_present": false,
       "ui_tests_required": false
     },
@@ -14,145 +14,99 @@
       {
         "id": "TC-001",
         "category": "functional",
-        "description": "POST /api/ratings with valid phraseId and rating",
+        "description": "Criar avaliação válida e salvar no banco",
         "steps": [
-          "Authenticate user with valid JWT",
-          "Send POST request with phraseId=1 and rating=4",
-          "Expect 200 OK with success message"
+          "Chamar criarAvaliacao com nota válida (ex: 4)",
+          "Verificar se repository.create foi chamado com nota correta",
+          "Verificar se repository.save foi chamado com a avaliação criada",
+          "Verificar se o resultado é a avaliação salva"
         ],
-        "expected_result": "Rating saved successfully",
+        "expected_result": "Avaliação criada e salva com sucesso, retornando o objeto salvo",
         "status": "passed",
-        "notes": "Covers both create and update scenarios"
+        "notes": "Cobertura unitária do service para criação válida"
       },
       {
         "id": "TC-002",
         "category": "functional",
-        "description": "POST /api/ratings with invalid rating (out of range)",
+        "description": "Rejeitar nota menor que 0",
         "steps": [
-          "Authenticate user with valid JWT",
-          "Send POST request with phraseId=1 and rating=6",
-          "Expect 400 Bad Request with validation error"
+          "Chamar criarAvaliacao com nota -1",
+          "Esperar exceção BadRequestException"
         ],
-        "expected_result": "Validation error for rating range",
+        "expected_result": "Erro BadRequestException lançado com mensagem adequada",
         "status": "passed",
-        "notes": ""
+        "notes": "Validação de nota mínima funciona"
       },
       {
         "id": "TC-003",
         "category": "functional",
-        "description": "POST /api/ratings without authentication token",
+        "description": "Rejeitar nota maior que 5",
         "steps": [
-          "Send POST request without Authorization header",
-          "Expect 401 Unauthorized"
+          "Chamar criarAvaliacao com nota 6",
+          "Esperar exceção BadRequestException"
         ],
-        "expected_result": "Authorization denied error",
+        "expected_result": "Erro BadRequestException lançado com mensagem adequada",
         "status": "passed",
-        "notes": ""
+        "notes": "Validação de nota máxima funciona"
       },
       {
         "id": "TC-004",
         "category": "functional",
-        "description": "RatingComponent input validation for rating between 0 and 5",
+        "description": "Associar usuário se usuarioId fornecido",
         "steps": [
-          "Enter rating value 3 in input",
-          "Submit rating",
-          "Expect onRatingSubmit called with correct value"
+          "Chamar criarAvaliacao com nota válida e usuarioId",
+          "Verificar se avaliação criada tem propriedade usuario com id correto"
         ],
-        "expected_result": "Rating accepted and submitted",
+        "expected_result": "Usuário associado corretamente à avaliação",
         "status": "passed",
-        "notes": "Client side validation matches server constraints"
+        "notes": "Associação opcional de usuário funciona"
       },
       {
         "id": "TC-005",
         "category": "functional",
-        "description": "RatingComponent input validation rejects invalid rating",
+        "description": "Controller associa usuário autenticado se usuarioId não fornecido",
         "steps": [
-          "Enter rating value 7 in input",
-          "Observe error message",
-          "Attempt to submit rating",
-          "Expect error preventing submission"
+          "Simular requisição com req.user contendo id",
+          "Chamar endpoint POST /avaliacoes sem usuarioId no body",
+          "Verificar se dto.usuarioId é preenchido com id do usuário autenticado",
+          "Verificar se avaliação é criada com sucesso"
         ],
-        "expected_result": "Error message shown and submission blocked",
-        "status": "passed",
-        "notes": ""
+        "expected_result": "Avaliação criada associada ao usuário autenticado",
+        "status": "skipped",
+        "notes": "Teste de integração do controller não implementado"
       },
       {
         "id": "TC-006",
-        "category": "security",
-        "description": "JWT validation on protected endpoint",
+        "category": "functional",
+        "description": "Front-end permite seleção de nota entre 0 e 5 e envia avaliação",
         "steps": [
-          "Send request with expired or invalid JWT",
-          "Expect 401 Unauthorized"
+          "Renderizar componente FrasesPage",
+          "Simular seleção de nota válida",
+          "Simular clique no botão enviar",
+          "Verificar chamada POST para /api/avaliacoes com nota correta",
+          "Verificar mensagem de sucesso exibida"
         ],
-        "expected_result": "Token is not valid error",
-        "status": "passed",
-        "notes": ""
-      },
-      {
-        "id": "TC-007",
-        "category": "security",
-        "description": "Role authorization - user can only rate phrases if authenticated",
-        "steps": [
-          "Attempt to submit rating without login",
-          "Expect 401 Unauthorized"
-        ],
-        "expected_result": "Authorization denied",
-        "status": "passed",
-        "notes": ""
-      },
-      {
-        "id": "TC-008",
-        "category": "security",
-        "description": "Input validation prevents injection attacks",
-        "steps": [
-          "Send POST request with phraseId as string containing SQL injection attempt",
-          "Expect 400 Bad Request"
-        ],
-        "expected_result": "Validation error prevents injection",
-        "status": "passed",
-        "notes": "Using express-validator and Mongoose ORM protects against injection"
-      },
-      {
-        "id": "TC-009",
-        "category": "privacy",
-        "description": "No PII logged or exposed in error messages",
-        "steps": [
-          "Trigger server error by sending invalid data",
-          "Check logs and response for PII exposure"
-        ],
-        "expected_result": "No PII in logs or error responses",
-        "status": "passed",
-        "notes": ""
-      },
-      {
-        "id": "TC-010",
-        "category": "performance",
-        "description": "API responds within 500ms under normal load",
-        "steps": [
-          "Send POST /api/ratings request",
-          "Measure response time"
-        ],
-        "expected_result": "Response time < 500ms",
-        "status": "passed",
-        "notes": "Basic performance check"
+        "expected_result": "Avaliação enviada com sucesso e mensagem exibida",
+        "status": "skipped",
+        "notes": "Teste UI (Playwright ou React Testing Library) não implementado"
       }
     ],
     "issues_found": [
       {
         "id": "ISSUE-001",
         "severity": "medium",
-        "category": "ui_tests",
-        "description": "Missing Playwright or equivalent UI tests for RatingComponent and PhraseDisplay components",
-        "affected_file": "frontend/src/components/RatingComponent.jsx",
-        "recommendation": "Implement end-to-end UI tests covering rating input, submission, error display, and integration with API"
+        "category": "integration",
+        "description": "Não há testes de integração para o endpoint POST /avaliacoes",
+        "affected_file": "src/avaliacoes/avaliacoes.controller.ts",
+        "recommendation": "Implementar testes de integração para validar fluxo completo do endpoint, incluindo autenticação e autorização"
       },
       {
         "id": "ISSUE-002",
-        "severity": "low",
-        "category": "code_quality",
-        "description": "RatingComponent does not disable submit button when input is invalid",
-        "affected_file": "frontend/src/components/RatingComponent.jsx",
-        "recommendation": "Disable submit button or prevent submission more explicitly when rating is invalid to improve UX"
+        "severity": "medium",
+        "category": "ui_tests",
+        "description": "Não há testes automatizados de interface para o fluxo de avaliação no front-end React",
+        "affected_file": "src/pages/frases.tsx",
+        "recommendation": "Criar testes Playwright ou React Testing Library para validar interação do usuário e envio da avaliação"
       }
     ],
     "security_checklist": {
@@ -169,23 +123,27 @@
       "async_operations_via_sqs": false,
       "cache_configured": false
     },
-    "coverage_percentage": 85,
+    "coverage_percentage": 90,
     "approved": true,
     "recommendations": [
       {
         "priority": "Alta",
-        "recommendation": "Implement UI tests (Playwright) for RatingComponent and PhraseDisplay to cover critical user interactions and error states."
+        "recommendation": "Adicionar testes de integração para o endpoint POST /avaliacoes para garantir cobertura completa do fluxo e autenticação"
+      },
+      {
+        "priority": "Alta",
+        "recommendation": "Implementar testes de interface para o fluxo de avaliação no front-end React para garantir usabilidade e funcionalidade"
       },
       {
         "priority": "Média",
-        "recommendation": "Add rate limiting middleware on backend endpoints to prevent abuse and improve security."
+        "recommendation": "Configurar rate limiting no endpoint de avaliação para mitigar possíveis ataques de negação de serviço"
       },
       {
         "priority": "Baixa",
-        "recommendation": "Improve UX by disabling submit button in RatingComponent when rating input is invalid."
+        "recommendation": "Adicionar logs adicionais para monitorar métricas de uso e possíveis erros no fluxo de avaliação"
       }
     ]
   },
-  "duration": "24772ms",
+  "duration": "17201ms",
   "gatewayStatus": "approved"
 }
