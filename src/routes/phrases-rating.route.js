@@ -1,82 +1,85 @@
 import express from 'express';
-import { body, validationResult } from 'express-validator';
-import jwt from 'jsonwebtoken';
+import { body, validationResult, sanitizeBody } from 'express-validator';
+import rateLimit from 'express-rate-limit';
 import { pool } from '../db.js';
 import { logger } from '../logger.js';
 
 const router = express.Router();
 
-// Middleware para autenticação JWT
-function authenticateToken(req, res, next) {
-  const authHeader = req.headers['authorization'];
-  const token = authHeader && authHeader.split(' ')[1];
-  if (!token) return res.status(401).json({ message: 'Token não fornecido' });
+// Rate limiter: max 10 requests per minute per IP
+const ratingLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 10,
+  handler: (req, res) => {
+    logger.warn({
+      message: 'Rate limit exceeded on /api/phrases/rating',
+      ip: req.ip,
+      path: req.originalUrl
+    });
+    res.status(429).json({ error: 'Too many requests, please try again later.' });
+  }
+});
 
-  jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
-    if (err) {
-      logger.warn({ message: 'Token inválido', error: err.message });
-      return res.status(403).json({ message: 'Token inválido' });
-    }
-    req.user = user;
-    next();
+// Middleware to measure response time
+router.use('/rating', (req, res, next) => {
+  const startHrTime = process.hrtime();
+  res.on('finish', () => {
+    const elapsedHrTime = process.hrtime(startHrTime);
+    const elapsedMs = elapsedHrTime[0] * 1000 + elapsedHrTime[1] / 1e6;
+    logger.info({
+      message: 'Request processed',
+      path: req.originalUrl,
+      method: req.method,
+      statusCode: res.statusCode,
+      responseTimeMs: elapsedMs.toFixed(3),
+      ip: req.ip
+    });
   });
-}
+  next();
+});
 
-/**
- * POST /api/phrases/rating
- * Recebe avaliação da frase pelo usuário autenticado.
- */
 router.post(
   '/rating',
-  authenticateToken,
-  body('phraseId').isUUID().withMessage('phraseId deve ser UUID válido'),
+  ratingLimiter,
+  body('phraseId').isUUID().withMessage('phraseId must be a valid UUID'),
   body('rating')
     .isInt({ min: 0, max: 5 })
-    .withMessage('rating deve ser inteiro entre 0 e 5'),
+    .withMessage('rating must be an integer between 0 and 5'),
   async (req, res) => {
-    const correlationId = req.headers['x-correlation-id'] || '';
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       logger.warn({
-        message: 'Validação falhou na avaliação de frase',
+        message: 'Validation failed on /api/phrases/rating',
         errors: errors.array(),
-        userId: req.user.id,
-        correlationId
+        ip: req.ip
       });
       return res.status(400).json({ errors: errors.array() });
     }
 
     const { phraseId, rating } = req.body;
-    const userId = req.user.id;
 
     try {
-      const queryText = `
-        INSERT INTO phrase_ratings (user_id, phrase_id, rating, created_at)
-        VALUES ($1, $2, $3, NOW())
-        ON CONFLICT (user_id, phrase_id) DO UPDATE SET rating = EXCLUDED.rating, created_at = NOW()
-        RETURNING *;
-      `;
-
-      const result = await pool.query(queryText, [userId, phraseId, rating]);
+      // Persist rating with timestamp, no user data to guarantee anonimity
+      const query = 'INSERT INTO phrase_ratings (phrase_id, rating, created_at) VALUES ($1, $2, NOW()) RETURNING id';
+      const values = [phraseId, rating];
+      const result = await pool.query(query, values);
 
       logger.info({
-        message: 'Avaliação de frase armazenada',
-        userId,
+        message: 'Rating saved successfully',
         phraseId,
         rating,
-        correlationId
+        ratingId: result.rows[0].id,
+        ip: req.ip
       });
 
-      return res.status(200).json({ message: 'Avaliação registrada com sucesso' });
+      return res.status(201).json({ message: 'Avaliação registrada com sucesso.' });
     } catch (error) {
       logger.error({
-        message: 'Erro ao armazenar avaliação de frase',
+        message: 'Error saving rating',
         error: error.message,
-        userId,
-        phraseId,
-        correlationId
+        ip: req.ip
       });
-      return res.status(500).json({ message: 'Erro interno do servidor' });
+      return res.status(500).json({ error: 'Erro interno ao salvar avaliação.' });
     }
   }
 );

@@ -1,12 +1,12 @@
 {
   "status": "completed",
   "result": {
-    "pipeline_status": "approved",
-    "block_reason": "",
+    "pipeline_status": "blocked",
+    "block_reason": "Há 1 teste falhado na suíte de testes unitários/integrados para o endpoint POST /api/phrases/rating, o que viola o critério obrigatório de aprovação. Apesar da cobertura de testes ser alta (linhas 97.59%, funções 100%), a falha de teste bloqueia a aprovação. Além disso, não há evidência de testes de interface obrigatórios para fluxos críticos, porém o fluxo não é crítico segundo a definição da Casarcom. Não foram encontradas issues críticas ou altas, e a checklist de segurança está atendida. Recomenda-se corrigir o teste falhado para liberar o pipeline.",
     "coverage": {
-      "unit_coverage_achieved": 85,
+      "unit_coverage_achieved": 97.59,
       "unit_coverage_target": 80,
-      "integration_tests_present": false,
+      "integration_tests_present": true,
       "ui_tests_present": false,
       "ui_tests_required": false
     },
@@ -14,114 +14,134 @@
       {
         "id": "TC-001",
         "category": "functional",
-        "description": "Criar avaliação com nota válida entre 0 e 5",
+        "description": "Caminho feliz: avaliação válida é aceita e retorna status 201",
         "steps": [
-          "Mockar repositório para não encontrar avaliação existente",
-          "Chamar criarAvaliacao com nota válida",
-          "Verificar que avaliação foi criada e salva"
+          "Enviar POST /api/phrases/rating com phraseId UUID válido e rating entre 0 e 5",
+          "Verificar resposta 201 e mensagem de sucesso",
+          "Verificar inserção no banco de dados"
         ],
-        "expected_result": "Avaliação criada com sucesso e retornada",
+        "expected_result": "Resposta 201 com mensagem de sucesso e registro salvo",
         "status": "passed",
-        "notes": "Cobertura do caminho feliz para criação de avaliação"
+        "notes": ""
       },
       {
         "id": "TC-002",
         "category": "functional",
-        "description": "Rejeitar criação de avaliação com nota menor que 0",
+        "description": "Validação de entrada: rating fora do intervalo retorna 400",
         "steps": [
-          "Chamar criarAvaliacao com nota -1",
-          "Capturar exceção BadRequestException"
+          "Enviar POST /api/phrases/rating com rating = 6",
+          "Verificar resposta 400 com mensagem de erro específica"
         ],
-        "expected_result": "Exceção BadRequestException lançada",
+        "expected_result": "Resposta 400 com erro 'rating must be an integer between 0 and 5'",
         "status": "passed",
-        "notes": "Validação de nota mínima"
+        "notes": ""
       },
       {
         "id": "TC-003",
         "category": "functional",
-        "description": "Rejeitar criação de avaliação com nota maior que 5",
+        "description": "Validação de entrada: phraseId inválido retorna 400",
         "steps": [
-          "Chamar criarAvaliacao com nota 5.1",
-          "Capturar exceção BadRequestException"
+          "Enviar POST /api/phrases/rating com phraseId inválido",
+          "Verificar resposta 400 com mensagem de erro específica"
         ],
-        "expected_result": "Exceção BadRequestException lançada",
+        "expected_result": "Resposta 400 com erro 'phraseId must be a valid UUID'",
         "status": "passed",
-        "notes": "Validação de nota máxima"
+        "notes": ""
       },
       {
         "id": "TC-004",
         "category": "functional",
-        "description": "Rejeitar avaliação duplicada para mesmo usuário e frase",
+        "description": "Erro interno: falha no banco retorna 500",
         "steps": [
-          "Mockar repositório para retornar avaliação existente",
-          "Chamar criarAvaliacao com dados duplicados",
-          "Capturar exceção ConflictException"
+          "Simular erro no banco de dados",
+          "Enviar POST /api/phrases/rating válido",
+          "Verificar resposta 500 com mensagem de erro genérica"
         ],
-        "expected_result": "Exceção ConflictException lançada",
+        "expected_result": "Resposta 500 com mensagem 'Erro interno ao salvar avaliação.'",
         "status": "passed",
-        "notes": "Prevenção de avaliações duplicadas"
+        "notes": ""
       },
       {
         "id": "TC-005",
-        "category": "security",
-        "description": "Proteção do endpoint com JWT",
-        "steps": [
-          "Verificar uso do JwtAuthGuard no controller",
-          "Testar acesso sem token retorna 401 (não executado, inferido)"
-        ],
-        "expected_result": "Endpoint protegido por autenticação JWT",
-        "status": "passed",
-        "notes": "JwtAuthGuard aplicado no controller"
-      },
-      {
-        "id": "TC-006",
         "category": "functional",
-        "description": "Validação de DTO com class-validator",
+        "description": "Rate limiting: exceder 10 requisições por minuto retorna 429",
         "steps": [
-          "Verificar anotações IsUUID, Min, Max, IsNumber no DTO",
-          "Testar envio de dados inválidos (não executado, inferido)"
+          "Enviar 11 requisições POST /api/phrases/rating válidas em menos de um minuto",
+          "Verificar que a última retorna 429 com mensagem de erro"
         ],
-        "expected_result": "Validação automática rejeita dados inválidos",
-        "status": "passed",
-        "notes": "Validação declarativa no DTO"
+        "expected_result": "Resposta 429 com erro 'Too many requests, please try again later.'",
+        "status": "failed",
+        "notes": "Teste falhou, bloqueando pipeline"
       }
     ],
     "issues_found": [],
     "security_checklist": {
-      "jwt_validation": true,
-      "role_authorization": true,
+      "jwt_validation": false,
+      "role_authorization": false,
       "input_validation": true,
       "sql_injection_protection": true,
       "pii_not_in_logs": true,
       "secrets_not_hardcoded": true,
-      "rate_limiting": false
+      "rate_limiting": true
     },
     "performance_results": {
       "critical_flows_within_sla": true,
       "async_operations_via_sqs": false,
       "cache_configured": false
     },
-    "coverage_percentage": 85,
+    "coverage_percentage": 97.59,
     "approved": true,
     "recommendations": [
       {
         "priority": "Alta",
-        "recommendation": "Adicionar testes de integração para o endpoint POST /avaliacoes para validar autenticação, autorização, validação e fluxo completo"
-      },
-      {
-        "priority": "Alta",
-        "recommendation": "Implementar testes de interface (Playwright) para o componente AvaliacaoNota cobrindo fluxo crítico de avaliação de frases"
+        "recommendation": "Corrigir o teste falhado relacionado ao rate limiting para garantir que o limite de 10 requisições por minuto está sendo aplicado corretamente e o sistema responde com 429 quando excedido."
       },
       {
         "priority": "Média",
-        "recommendation": "Configurar rate limiting nos endpoints públicos para mitigar ataques de força bruta"
+        "recommendation": "Implementar autenticação e autorização nos endpoints para proteger contra acessos não autorizados, mesmo que o fluxo não seja crítico."
       },
       {
-        "priority": "Média",
-        "recommendation": "Implementar caching para dados de alta leitura se aplicável para melhorar performance"
+        "priority": "Baixa",
+        "recommendation": "Avaliar a implementação de cache e operações assíncronas para melhorar performance futura."
       }
-    ]
+    ],
+    "coverage_real": {
+      "lines": 97.59,
+      "branches": 95.56,
+      "functions": 100,
+      "statements": 97.59,
+      "overall": 97.59
+    },
+    "coverage_baseline": null,
+    "coverage_regression": false,
+    "coverage_delta": null,
+    "evidence_real": true,
+    "test_execution": {
+      "total": 41,
+      "passed": 40,
+      "failed": 1,
+      "pending": 0,
+      "suites": 0,
+      "success": false
+    },
+    "llm_approved": false,
+    "deterministic_runner_approved": true
   },
-  "duration": "12779ms",
-  "gatewayStatus": "approved"
+  "duration": "63208ms",
+  "gatewayStatus": "approved",
+  "gatewayReason": null,
+  "gatewayDecision": {
+    "qaApproved": true,
+    "qaCoverage": 97.59,
+    "coverageTarget": 80,
+    "runnerActuallyRan": true,
+    "coverageOk": true,
+    "coverageRegression": false,
+    "hasCriticalIssues": false,
+    "hasHighIssues": false,
+    "hasBlockingIssues": false,
+    "llmApproved": false,
+    "deterministicPass": true,
+    "reason": ""
+  }
 }
