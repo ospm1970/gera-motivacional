@@ -1,0 +1,67 @@
+{
+  "status": "completed",
+  "result": {
+    "security_status": "approved",
+    "block_reason": null,
+    "privacy_by_design": {
+      "data_minimization": true,
+      "purpose_defined": true,
+      "retention_policy": false,
+      "consent_mechanism": true,
+      "access_portability": true,
+      "technical_protection": true,
+      "issues": [
+        "Não há política de retenção explícita para avaliações armazenadas no banco de dados."
+      ]
+    },
+    "security_by_design": {
+      "authentication": true,
+      "authorization": true,
+      "input_validation": true,
+      "attack_protection": true,
+      "secure_configuration": false,
+      "dependencies_clean": true,
+      "aws_configuration": true,
+      "issues": [
+        "CORS está configurado com origem '*' por padrão, o que é inseguro em produção. Deve ser restrito a origens confiáveis."
+      ]
+    },
+    "vulnerabilities": [],
+    "lgpd_compliance": {
+      "personal_data_identified": [],
+      "sensitive_data_identified": [],
+      "legal_basis_defined": true,
+      "pii_in_logs": false,
+      "right_to_deletion": false,
+      "issues": [
+        "Não há implementação explícita do direito ao esquecimento para avaliações armazenadas.",
+        "Avaliações são anônimas, mas não há política clara para exclusão ou anonimização após período definido."
+      ]
+    },
+    "approved": true,
+    "recommendations": [
+      {
+        "priority": "Alta",
+        "recommendation": "Restringir CORS para lista de origens confiáveis em ambiente de produção para evitar exposição desnecessária."
+      },
+      {
+        "priority": "Média",
+        "recommendation": "Definir e implementar política de retenção para avaliações armazenadas, incluindo possibilidade de exclusão (hard delete) para atender LGPD."
+      },
+      {
+        "priority": "Média",
+        "recommendation": "Implementar mecanismo para exercício do direito ao esquecimento, permitindo exclusão de avaliações relacionadas a um usuário, caso aplicável."
+      }
+    ],
+    "documentation_required": false,
+    "documented_findings": [],
+    "gatewayStatus": "approved",
+    "gatewayReason": null,
+    "summary": "Nenhum achado de segurança bloqueante documentado.",
+    "hasWarnings": false,
+    "highlightedFindings": []
+  },
+  "duration": "28765ms",
+  "gatewayStatus": "approved",
+  "gatewayReason": null
+}
