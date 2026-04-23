@@ -1,0 +1,113 @@
+{
+  "compatible": true,
+  "severity": "approved",
+  "summary": "Writeback estrutural aprovado: a mudança toca superfícies compatíveis com os entrypoints reais detectados.",
+  "entrypointConnections": [
+    {
+      "path": "server.js",
+      "type": "backend-runtime"
+    },
+    {
+      "path": "public/app.js",
+      "type": "backend-runtime"
+    },
+    {
+      "path": "public/index.html",
+      "type": "backend-runtime"
+    },
+    {
+      "path": "public/app.js",
+      "type": "ui-runtime"
+    },
+    {
+      "path": "public/index.html",
+      "type": "ui-runtime"
+    }
+  ],
+  "missingConnections": [],
+  "pathMismatches": [],
+  "warnings": [],
+  "blockingIssues": [],
+  "recommendedFixes": [],
+  "validatedPaths": [
+    "server.js",
+    "public/app.js",
+    "public/index.html",
+    "test/server.spec.js"
+  ],
+  "pathRemap": {},
+  "analyzedEntries": [
+    {
+      "path": "server.js",
+      "exists": true,
+      "isTest": false,
+      "entryDir": "",
+      "basename": "server.js",
+      "top": "server.js",
+      "insideWorkspace": true,
+      "inRuntimeDir": false,
+      "inUiDir": false,
+      "inServedDirectory": false,
+      "touchesRuntimeEntrypoint": true,
+      "touchesUiEntrypoint": false,
+      "touchesRouteMountFile": true,
+      "seemsParallelEntrypoint": false,
+      "seemsParallelUiEntrypoint": false,
+      "suspiciousTopLevel": false
+    },
+    {
+      "path": "public/app.js",
+      "exists": true,
+      "isTest": false,
+      "entryDir": "public",
+      "basename": "app.js",
+      "top": "public",
+      "insideWorkspace": true,
+      "inRuntimeDir": false,
+      "inUiDir": true,
+      "inServedDirectory": true,
+      "touchesRuntimeEntrypoint": false,
+      "touchesUiEntrypoint": true,
+      "touchesRouteMountFile": true,
+      "seemsParallelEntrypoint": false,
+      "seemsParallelUiEntrypoint": false,
+      "suspiciousTopLevel": false
+    },
+    {
+      "path": "public/index.html",
+      "exists": true,
+      "isTest": false,
+      "entryDir": "public",
+      "basename": "index.html",
+      "top": "public",
+      "insideWorkspace": true,
+      "inRuntimeDir": false,
+      "inUiDir": true,
+      "inServedDirectory": true,
+      "touchesRuntimeEntrypoint": false,
+      "touchesUiEntrypoint": true,
+      "touchesRouteMountFile": false,
+      "seemsParallelEntrypoint": false,
+      "seemsParallelUiEntrypoint": false,
+      "suspiciousTopLevel": false
+    },
+    {
+      "path": "test/server.spec.js",
+      "exists": false,
+      "isTest": true,
+      "entryDir": "test",
+      "basename": "server.spec.js",
+      "top": "test",
+      "insideWorkspace": true,
+      "inRuntimeDir": false,
+      "inUiDir": false,
+      "inServedDirectory": false,
+      "touchesRuntimeEntrypoint": false,
+      "touchesUiEntrypoint": false,
+      "touchesRouteMountFile": false,
+      "seemsParallelEntrypoint": false,
+      "seemsParallelUiEntrypoint": false,
+      "suspiciousTopLevel": false
+    }
+  ]
+}

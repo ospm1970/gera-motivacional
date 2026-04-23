@@ -1,0 +1,64 @@
+{
+  "status": "completed",
+  "result": {
+    "security_status": "approved",
+    "block_reason": null,
+    "privacy_by_design": {
+      "data_minimization": true,
+      "purpose_defined": true,
+      "retention_policy": true,
+      "consent_mechanism": true,
+      "access_portability": true,
+      "technical_protection": true,
+      "issues": []
+    },
+    "security_by_design": {
+      "authentication": true,
+      "authorization": "[REDACTED]",
+      "input_validation": true,
+      "attack_protection": true,
+      "secure_configuration": true,
+      "dependencies_clean": true,
+      "aws_configuration": true,
+      "issues": []
+    },
+    "vulnerabilities": [],
+    "lgpd_compliance": {
+      "personal_data_identified": [],
+      "sensitive_data_identified": [],
+      "legal_basis_defined": true,
+      "pii_in_logs": false,
+      "right_to_deletion": true,
+      "issues": []
+    },
+    "approved": true,
+    "recommendations": [
+      {
+        "priority": "Baixa",
+        "recommendation": "Implementar mecanismo de soft delete e política formal de retenção para avaliações, mesmo que não contenham dados pessoais, para alinhamento com melhores práticas de retenção e exclusão de dados."
+      },
+      {
+        "priority": "Baixa",
+        "recommendation": "Considerar adicionar proteção CSRF caso futuramente a API aceite requisições via browser com cookies de autenticação, mesmo que atualmente não haja autenticação."
+      },
+      {
+        "priority": "Baixa",
+        "recommendation": "Garantir que logs de erro em produção não exponham stack traces para evitar vazamento de informações internas."
+      }
+    ],
+    "documentation_required": false,
+    "documented_findings": [],
+    "gatewayStatus": "approved",
+    "gatewayReason": null,
+    "summary": "Nenhum achado de segurança bloqueante documentado.",
+    "hasWarnings": false,
+    "highlightedFindings": []
+  },
+  "duration": "5192ms",
+  "iteration": 2,
+  "completedAt": "2026-04-23T20:04:03.633Z",
+  "checkpointRef": "C:\\Users\\Marcelo Martins\\Documents\\Casarcom\\code\\pipeline-executor\\data\\executions\\pipeline-1776974258337\\checkpoints\\2026-04-23T20-04-03-633Z-security-completed.json",
+  "lastTransition": "completed",
+  "gatewayStatus": "approved",
+  "gatewayReason": null
+}

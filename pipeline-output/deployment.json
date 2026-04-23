@@ -1,0 +1,110 @@
+{
+  "status": "completed",
+  "result": {
+    "deployment_plan": {
+      "strategy": "blue-green",
+      "target_environment": "production",
+      "estimated_duration_minutes": 15,
+      "requires_manual_approval": true,
+      "rollback_strategy": "Rollback automático via CodeDeploy se health checks falharem ou taxa de erro > 5% durante shift. Rollback manual possível repondo task definition anterior no ECS. RDS snapshots diários garantem recuperação de dados.",
+      "steps": [
+        {
+          "step": 1,
+          "description": "Build e push da imagem Docker para ECR",
+          "duration_minutes": 3
+        },
+        {
+          "step": 2,
+          "description": "Criar nova task definition ECS com a nova imagem e variáveis de ambiente atualizadas",
+          "duration_minutes": 1
+        },
+        {
+          "step": 3,
+          "description": "Iniciar deploy Blue/Green via CodeDeploy, subindo novo conjunto de tasks (Green)",
+          "duration_minutes": 5
+        },
+        {
+          "step": 4,
+          "description": "Executar health checks no ALB (/health) e monitorar logs estruturados para erros",
+          "duration_minutes": 5
+        },
+        {
+          "step": 5,
+          "description": "Realizar shift gradual de tráfego: 10% → 50% → 100% com janelas de 10 minutos entre cada etapa",
+          "duration_minutes": 1
+        }
+      ]
+    },
+    "infrastructure_config": {
+      "compute": "ECS Fargate — mínimo 2 tasks em Multi-AZ, Auto Scaling configurado para CPU e latência",
+      "database": "SQLite local no container para avaliações (considerar migração futura para RDS para escala)",
+      "cache": "ElastiCache Redis cluster mode (não utilizado diretamente nesta feature)",
+      "queues": "SQS com DLQ configurada para outras filas (não aplicável para esta feature)",
+      "secrets": "[REDACTED]",
+      "networking": "ALB com SSL termination, VPC privada para recursos sensíveis"
+    },
+    "observability": {
+      "log_group": "/casarcom/phrases-api/production",
+      "metrics": [
+        "HTTP 5xx rate",
+        "Latência P95",
+        "CPU/Memória ECS",
+        "SQS ApproximateAgeOfOldestMessage",
+        "RDS CPUUtilization"
+      ],
+      "alarms": [
+        "5xx rate > 1%",
+        "Latência P95 > 500ms",
+        "SQS mensagem antiga > 5min",
+        "SQS DLQ > 0 mensagens"
+      ],
+      "dashboard": "CloudWatch dashboard com métricas técnicas e de negócio incluindo taxa de avaliações e erros"
+    },
+    "security_config": {
+      "secrets_via_secrets_manager": "[REDACTED]",
+      "iam_least_privilege": true,
+      "vpc_private_resources": true,
+      "security_groups_minimal": true,
+      "cloudtrail_enabled": true
+    },
+    "backup_recovery": {
+      "rto_minutes": 60,
+      "rpo_minutes": 15,
+      "rds_snapshot_retention_days": 30,
+      "backup_region": "us-east-1"
+    },
+    "health_checks": [
+      {
+        "check": "ALB target group health",
+        "endpoint": "/health",
+        "expected_status": 200
+      },
+      {
+        "check": "RDS connectivity",
+        "description": "Verificar conexão via health check interno"
+      },
+      {
+        "check": "Redis connectivity",
+        "description": "Verificar conexão ElastiCache"
+      },
+      {
+        "check": "SQS consumer ativo",
+        "description": "Verificar que worker está consumindo a fila"
+      }
+    ],
+    "deployment_approved": true,
+    "notes": "Garantir que variável CORS_ORIGIN esteja configurada corretamente em produção para evitar bloqueios CORS. Monitorar logs estruturados para eventos de avaliação e falhas de validação. Testes automatizados cobrem validação, persistência, CORS e rate limiting. Banco SQLite local usado para simplicidade, avaliar migração para banco gerenciado se escala aumentar. Notificar time de operações sobre janela de deploy.",
+    "deployment_steps": [
+      "Revisar e executar o plano de deploy manualmente"
+    ],
+    "rollback_plan": [
+      "Executar rollback para a última versão estável"
+    ],
+    "environment": "development",
+    "estimated_deployment_time_minutes": 30
+  },
+  "duration": "11115ms",
+  "completedAt": "2026-04-23T20:05:24.167Z",
+  "checkpointRef": "C:\\Users\\Marcelo Martins\\Documents\\Casarcom\\code\\pipeline-executor\\data\\executions\\pipeline-1776974258337\\checkpoints\\2026-04-23T20-05-24-167Z-deployment-completed.json",
+  "lastTransition": "completed"
+}

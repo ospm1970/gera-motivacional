@@ -1,0 +1,52 @@
+{
+  "requirement": "Adicionar na tela do projeto um campo para o usuario dar uma nota para as frases geradas e armazenar as notas dadas gerando uma média das notas em outro campo na tela.",
+  "status": "completed",
+  "createdAt": "2026-04-23T19:57:38.339Z",
+  "completedAt": "2026-04-23T20:05:45.851Z",
+  "stages": [
+    {
+      "name": "specification",
+      "status": "completed",
+      "duration": "26835ms"
+    },
+    {
+      "name": "analysis",
+      "status": "completed",
+      "duration": "22054ms"
+    },
+    {
+      "name": "ux_design",
+      "status": "completed",
+      "duration": "8901ms"
+    },
+    {
+      "name": "development",
+      "status": "completed",
+      "duration": "44743ms"
+    },
+    {
+      "name": "code_review",
+      "status": "completed"
+    },
+    {
+      "name": "security",
+      "status": "completed",
+      "duration": "5192ms"
+    },
+    {
+      "name": "qa",
+      "status": "completed",
+      "duration": "24776ms"
+    },
+    {
+      "name": "deployment",
+      "status": "completed",
+      "duration": "11115ms"
+    },
+    {
+      "name": "writeback_validation",
+      "status": "approved",
+      "duration": "0ms"
+    }
+  ]
+}
