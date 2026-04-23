@@ -1,11 +1,11 @@
 import { test, before, after } from 'node:test';
 import assert from 'node:assert/strict';
 
-delete process.env.PORT;
+process.env.PORT = '3305';
 delete process.env.NODE_ENV;
 delete process.env.OPENAI_API_KEY;
 
-const baseUrl = 'http://127.0.0.1:3000';
+const baseUrl = 'http://127.0.0.1:3305';
 
 let server;
 
