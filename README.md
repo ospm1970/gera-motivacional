@@ -1,16 +1,18 @@
-# ✨ Gerador de Frases Motivacionais
+# ✨ Gerador de Frases Motivacionais e Satíricas
 
-Aplicação web que solicita 3 palavras do usuário e gera uma frase motivacional em português usando a API do ChatGPT.
+Aplicação web que solicita 3 palavras do usuário e gera tanto uma frase motivacional inspiradora quanto uma frase satírica (sarcástica) em português, usando a API do ChatGPT.
 
 ## 🎯 Funcionalidades
 
 - ✅ Interface intuitiva e responsiva
 - ✅ Solicita 3 palavras em português
 - ✅ Gera frases motivacionais personalizadas usando ChatGPT
-- ✅ Validação de entrada em tempo real
-- ✅ Tratamento de erros robusto
+- ✅ Gera frases satíricas e sarcásticas usando ChatGPT
+- ✅ Histórico das últimas 100 frases geradas
+- ✅ Validação de entrada em tempo real e no backend
+- ✅ Tratamento de erros robusto e timeouts de API
 - ✅ Design moderno com Tailwind CSS
-- ✅ API REST bem estruturada
+- ✅ API REST robusta com segurança (Helmet, Rate Limit, Sanitização)
 
 ## 🚀 Início Rápido
 
@@ -48,7 +50,11 @@ Aplicação web que solicita 3 palavras do usuário e gera uma frase motivaciona
 
 5. **Inicie o servidor**
    ```bash
+   # Para produção
    npm start
+
+   # Para desenvolvimento (com watch mode)
+   npm run dev
    ```
 
 6. **Acesse a aplicação**
@@ -60,19 +66,19 @@ Aplicação web que solicita 3 palavras do usuário e gera uma frase motivaciona
 
 1. Digite 3 palavras em português nos campos de entrada
 2. Clique em "Gerar Frase"
-3. Aguarde a geração da frase motivacional
-4. A frase será exibida com as palavras utilizadas
+3. Aguarde o processamento (motivacional e satírico em paralelo)
+4. As frases serão exibidas lado a lado para comparação
 
 ## 🔌 API Endpoints
 
-### POST /api/motivational-phrase
+### POST /api/phrases
 
-Gera uma frase motivacional com base nas palavras fornecidas.
+Gera frases (motivacional e satírica) com base nas palavras fornecidas.
 
 **Request:**
 ```json
 {
-  "words": ["sucesso", "determinação", "crescimento"]
+  "words": ["sucesso", "trabalho", "café"]
 }
 ```
 
@@ -80,23 +86,33 @@ Gera uma frase motivacional com base nas palavras fornecidas.
 ```json
 {
   "success": true,
-  "words": ["sucesso", "determinação", "crescimento"],
-  "phrase": "Com sucesso, determinação e crescimento, você alcançará seus objetivos.",
-  "timestamp": "2026-04-07T22:00:00.000Z"
+  "words": ["sucesso", "trabalho", "café"],
+  "motivationalPhrase": "Com trabalho e café, o sucesso é inevitável.",
+  "satiricalPhrase": "Sucesso é o que acontece enquanto você toma café e finge que o trabalho não existe.",
+  "timestamp": "2024-05-20T10:00:00.000Z"
 }
 ```
 
-**Response (400):**
-```json
-{
-  "error": "Deve fornecer exatamente 3 palavras"
-}
-```
+### GET /api/history
 
-**Response (500):**
+Recupera o histórico das últimas frases geradas.
+
+**Query Params:**
+- `limit`: Número de registros (default 20, max 100)
+
+**Response:**
 ```json
 {
-  "error": "Erro ao gerar frase motivacional. Tente novamente mais tarde."
+  "success": true,
+  "count": 1,
+  "entries": [
+    {
+      "words": ["sucesso", "trabalho", "café"],
+      "motivationalPhrase": "...",
+      "satiricalPhrase": "...",
+      "timestamp": "..."
+    }
+  ]
 }
 ```
 
@@ -104,80 +120,49 @@ Gera uma frase motivacional com base nas palavras fornecidas.
 
 Verifica o status da aplicação.
 
-**Response:**
-```json
-{
-  "status": "ok",
-  "timestamp": "2026-04-07T22:00:00.000Z"
-}
-```
-
 ## 📁 Estrutura do Projeto
 
 ```
 gera-motivacional/
-├── server.js              # Servidor Express e API
-├── public/
-│   └── index.html         # Interface frontend
-├── package.json           # Dependências do projeto
-├── .env                   # Variáveis de ambiente
-├── .env.example           # Exemplo de variáveis
-└── README.md              # Este arquivo
+├── server.js              # Servidor Express principal
+├── satiricalGenerator.js  # Lógica de geração de frases satíricas
+├── history.js             # Gerenciamento de histórico (JSON)
+├── public/                # Frontend (HTML, CSS, JS)
+│   ├── index.html
+│   ├── styles.css
+│   └── app.js
+├── test/                  # Testes automatizados
+├── data/                  # Armazenamento de dados (histórico)
+├── package.json           # Dependências e scripts
+└── .env                   # Configurações
 ```
 
 ## 🛠️ Tecnologias Utilizadas
 
 ### Backend
 - **Express.js** - Framework web
-- **OpenAI API** - Geração de frases com ChatGPT
-- **CORS** - Compartilhamento de recursos entre origens
-- **dotenv** - Gerenciamento de variáveis de ambiente
+- **OpenAI SDK** - Integração com ChatGPT
+- **Helmet** - Segurança de headers HTTP
+- **Express Rate Limit** - Proteção contra abuso
+- **Express Validator** - Validação de dados de entrada
+- **Sanitize HTML** - Limpeza de conteúdo gerado pela IA
+- **Dotenv** - Variáveis de ambiente
 
 ### Frontend
-- **HTML5** - Estrutura
-- **Tailwind CSS** - Estilização
-- **JavaScript Vanilla** - Interatividade
-- **Fetch API** - Requisições HTTP
+- **Tailwind CSS** - Estilização moderna
+- **JavaScript Vanilla** - Lógica e chamadas de API
+- **Fetch API** - Comunicação assíncrona
 
-## 🧪 Validação
+## 🧪 Testes
 
-### Validação de Entrada
-- Exatamente 3 palavras obrigatórias
-- Apenas letras portuguesas (incluindo acentos)
-- Sem números ou caracteres especiais
-- Sem campos vazios
+O projeto utiliza o test runner nativo do Node.js.
 
-### Validação de Saída
-- Verifica se a frase contém todas as 3 palavras
-- Retorna erro se alguma palavra estiver faltando
-- Trata erros da API do OpenAI
+```bash
+# Rodar todos os testes
+npm test
 
-## 🔐 Segurança
-
-- Validação de entrada no frontend e backend
-- Proteção contra SQL injection (não usa banco de dados)
-- Tratamento seguro de erros
-- Variáveis de ambiente para dados sensíveis
-- CORS configurado para requisições seguras
-
-## 📊 Exemplos de Uso
-
-### Exemplo 1
-```
-Palavras: "inovação", "criatividade", "futuro"
-Frase: "A inovação e criatividade são as chaves para construir um futuro melhor."
-```
-
-### Exemplo 2
-```
-Palavras: "coragem", "ação", "resultado"
-Frase: "Com coragem para agir, você alcançará resultados extraordinários."
-```
-
-### Exemplo 3
-```
-Palavras: "persistência", "força", "vitória"
-Frase: "A persistência e a força levam à vitória."
+# Rodar com cobertura
+npm run test:coverage
 ```
 
 ## 🐛 Troubleshooting
@@ -196,44 +181,20 @@ Frase: "A persistência e a força levam à vitória."
 
 ### Servidor não inicia
 - Verifique se a porta 3000 está disponível
-- Tente usar uma porta diferente: `PORT=3001 npm start`
+- Tente usar uma porta diferente alterando `PORT` no `.env`
 
 ## 📦 Deploy
 
-### Opção 1: Heroku
-```bash
-heroku create seu-app
-git push heroku main
-heroku config:set OPENAI_API_KEY=sua-chave
-```
-
-### Opção 2: Railway
-```bash
-railway link
-railway up
-```
-
-### Opção 3: Vercel
-```bash
-vercel
-```
+### Opção 1: Railway / Render / Heroku
+A aplicação está pronta para ser enviada para qualquer provedor que suporte Node.js. Certifique-se de configurar a variável de ambiente `OPENAI_API_KEY` no painel do provedor.
 
 ## 📄 Licença
 
-MIT - Veja o arquivo LICENSE para detalhes
+MIT
 
 ## 👤 Autor
 
 Marcelo Martins - [@ospm1970](https://github.com/ospm1970)
 
-## 🤝 Contribuições
-
-Contribuições são bem-vindas! Sinta-se à vontade para abrir issues ou pull requests.
-
-## 📞 Suporte
-
-Para suporte, abra uma issue no repositório ou entre em contato através do GitHub.
-
 ---
-
 **Desenvolvido com ❤️ usando Node.js e OpenAI**
