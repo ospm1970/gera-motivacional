@@ -97,6 +97,10 @@ const elements = {
   timestamp: new FakeElement('timestamp'),
   submitText: new FakeElement('submitText'),
   spinner: new FakeElement('spinner', { hidden: true }),
+  starsMotivational: new FakeElement('starsMotivational'),
+  starsSatirical: new FakeElement('starsSatirical'),
+  ratingMsgMotivational: new FakeElement('ratingMsgMotivational'),
+  ratingMsgSatirical: new FakeElement('ratingMsgSatirical'),
 };
 
 elements.motivationalForm = new FakeForm('motivationalForm', [elements.word1, elements.word2, elements.word3]);

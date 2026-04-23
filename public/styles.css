@@ -466,3 +466,41 @@ button:disabled {
     font-size: 1rem;
   }
 }
+
+/* ==========================================
+   AVALIAÇÃO POR ESTRELAS
+   ========================================== */
+.stars-container {
+  display: flex;
+  gap: 4px;
+}
+
+.star-btn {
+  background: none;
+  border: none;
+  font-size: 1.6rem;
+  cursor: pointer;
+  color: #d1d5db;
+  padding: 0;
+  line-height: 1;
+  transition: color 0.15s, transform 0.1s;
+}
+
+.star-btn:hover,
+.star-btn.hovered {
+  color: #f59e0b;
+  transform: scale(1.15);
+}
+
+.star-btn.selected {
+  color: #f59e0b;
+}
+
+.star-btn:disabled {
+  cursor: default;
+  transform: none;
+}
+
+.min-w-xs {
+  min-width: 240px;
+}
