@@ -6,7 +6,7 @@
       "target_environment": "production",
       "estimated_duration_minutes": 15,
       "requires_manual_approval": true,
-      "rollback_strategy": "Rollback automático via CodeDeploy se health checks falharem ou taxa de erro > 5% durante shift. Rollback manual possível repondo task definition anterior no ECS. RDS snapshots diários garantem recuperação de dados.",
+      "rollback_strategy": "Rollback automático via CodeDeploy se health checks falharem ou taxa de erro > 5% durante shift. Rollback manual possível repondo task definition para versão anterior no ECS.",
       "steps": [
         {
           "step": 1,
@@ -15,36 +15,36 @@
         },
         {
           "step": 2,
-          "description": "Criar nova task definition ECS com a nova imagem e variáveis de ambiente atualizadas",
+          "description": "Criar nova task definition ECS",
           "duration_minutes": 1
         },
         {
           "step": 3,
-          "description": "Iniciar deploy Blue/Green via CodeDeploy, subindo novo conjunto de tasks (Green)",
+          "description": "Iniciar deploy Blue/Green via CodeDeploy",
           "duration_minutes": 5
         },
         {
           "step": 4,
-          "description": "Executar health checks no ALB (/health) e monitorar logs estruturados para erros",
+          "description": "Health checks e shift de tráfego gradual",
           "duration_minutes": 5
         },
         {
           "step": 5,
-          "description": "Realizar shift gradual de tráfego: 10% → 50% → 100% com janelas de 10 minutos entre cada etapa",
+          "description": "Validação e finalização",
           "duration_minutes": 1
         }
       ]
     },
     "infrastructure_config": {
-      "compute": "ECS Fargate — mínimo 2 tasks em Multi-AZ, Auto Scaling configurado para CPU e latência",
-      "database": "SQLite local no container para avaliações (considerar migração futura para RDS para escala)",
-      "cache": "ElastiCache Redis cluster mode (não utilizado diretamente nesta feature)",
-      "queues": "SQS com DLQ configurada para outras filas (não aplicável para esta feature)",
+      "compute": "ECS Fargate — 2 tasks mínimo, Auto Scaling configurado",
+      "database": "RDS PostgreSQL Multi-AZ com snapshots diários",
+      "cache": "ElastiCache Redis cluster mode",
+      "queues": "SQS com DLQ configurada",
       "secrets": "[REDACTED]",
-      "networking": "ALB com SSL termination, VPC privada para recursos sensíveis"
+      "networking": "ALB com SSL + VPC privada para RDS/ElastiCache"
     },
     "observability": {
-      "log_group": "/casarcom/phrases-api/production",
+      "log_group": "/casarcom/{service}/{environment}",
       "metrics": [
         "HTTP 5xx rate",
         "Latência P95",
@@ -58,7 +58,7 @@
         "SQS mensagem antiga > 5min",
         "SQS DLQ > 0 mensagens"
       ],
-      "dashboard": "CloudWatch dashboard com métricas técnicas e de negócio incluindo taxa de avaliações e erros"
+      "dashboard": "CloudWatch dashboard com métricas técnicas e de negócio"
     },
     "security_config": {
       "secrets_via_secrets_manager": "[REDACTED]",
@@ -92,8 +92,8 @@
         "description": "Verificar que worker está consumindo a fila"
       }
     ],
-    "deployment_approved": true,
-    "notes": "Garantir que variável CORS_ORIGIN esteja configurada corretamente em produção para evitar bloqueios CORS. Monitorar logs estruturados para eventos de avaliação e falhas de validação. Testes automatizados cobrem validação, persistência, CORS e rate limiting. Banco SQLite local usado para simplicidade, avaliar migração para banco gerenciado se escala aumentar. Notificar time de operações sobre janela de deploy.",
+    "deployment_approved": false,
+    "notes": "Deploy para produção requer aprovação explícita do tech lead conforme política da Casarcom. Certifique-se que checklist pré-deploy foi completamente validado antes de iniciar.",
     "deployment_steps": [
       "Revisar e executar o plano de deploy manualmente"
     ],
@@ -103,8 +103,8 @@
     "environment": "development",
     "estimated_deployment_time_minutes": 30
   },
-  "duration": "11115ms",
-  "completedAt": "2026-04-23T20:05:24.167Z",
-  "checkpointRef": "C:\\Users\\Marcelo Martins\\Documents\\Casarcom\\code\\pipeline-executor\\data\\executions\\pipeline-1776974258337\\checkpoints\\2026-04-23T20-05-24-167Z-deployment-completed.json",
+  "duration": "10680ms",
+  "completedAt": "2026-04-24T12:29:36.723Z",
+  "checkpointRef": "C:\\Users\\Marcelo Martins\\Documents\\Casarcom\\code\\pipeline-executor\\data\\executions\\pipeline-1777033567075\\checkpoints\\2026-04-24T12-29-36-723Z-deployment-completed.json",
   "lastTransition": "completed"
 }

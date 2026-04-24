@@ -8,19 +8,19 @@
       "type": "backend-runtime"
     },
     {
-      "path": "public/app.js",
-      "type": "backend-runtime"
-    },
-    {
       "path": "public/index.html",
       "type": "backend-runtime"
     },
     {
       "path": "public/app.js",
+      "type": "backend-runtime"
+    },
+    {
+      "path": "public/index.html",
       "type": "ui-runtime"
     },
     {
-      "path": "public/index.html",
+      "path": "public/app.js",
       "type": "ui-runtime"
     }
   ],
@@ -31,9 +31,9 @@
   "recommendedFixes": [],
   "validatedPaths": [
     "server.js",
-    "public/app.js",
     "public/index.html",
-    "test/server.spec.js"
+    "public/app.js",
+    "test/average-rating.test.js"
   ],
   "pathRemap": {},
   "analyzedEntries": [
@@ -50,24 +50,6 @@
       "inServedDirectory": false,
       "touchesRuntimeEntrypoint": true,
       "touchesUiEntrypoint": false,
-      "touchesRouteMountFile": true,
-      "seemsParallelEntrypoint": false,
-      "seemsParallelUiEntrypoint": false,
-      "suspiciousTopLevel": false
-    },
-    {
-      "path": "public/app.js",
-      "exists": true,
-      "isTest": false,
-      "entryDir": "public",
-      "basename": "app.js",
-      "top": "public",
-      "insideWorkspace": true,
-      "inRuntimeDir": false,
-      "inUiDir": true,
-      "inServedDirectory": true,
-      "touchesRuntimeEntrypoint": false,
-      "touchesUiEntrypoint": true,
       "touchesRouteMountFile": true,
       "seemsParallelEntrypoint": false,
       "seemsParallelUiEntrypoint": false,
@@ -92,11 +74,29 @@
       "suspiciousTopLevel": false
     },
     {
-      "path": "test/server.spec.js",
+      "path": "public/app.js",
+      "exists": true,
+      "isTest": false,
+      "entryDir": "public",
+      "basename": "app.js",
+      "top": "public",
+      "insideWorkspace": true,
+      "inRuntimeDir": false,
+      "inUiDir": true,
+      "inServedDirectory": true,
+      "touchesRuntimeEntrypoint": false,
+      "touchesUiEntrypoint": true,
+      "touchesRouteMountFile": true,
+      "seemsParallelEntrypoint": false,
+      "seemsParallelUiEntrypoint": false,
+      "suspiciousTopLevel": false
+    },
+    {
+      "path": "test/average-rating.test.js",
       "exists": false,
       "isTest": true,
       "entryDir": "test",
-      "basename": "server.spec.js",
+      "basename": "average-rating.test.js",
       "top": "test",
       "insideWorkspace": true,
       "inRuntimeDir": false,
