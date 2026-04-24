@@ -139,6 +139,33 @@ test('GET /api/history respeita parâmetro limit', async () => {
 });
 
 // ---------------------------------------------------------------------------
+// GET /api/phrases/ratings/average
+// ---------------------------------------------------------------------------
+test('GET /api/phrases/ratings/average retorna média ou null', async () => {
+  const res = await fetch(`${BASE}/api/phrases/ratings/average`);
+  assert.equal(res.status, 200);
+  const body = await res.json();
+  assert.ok('average' in body);
+  if (body.average !== null) {
+    assert.equal(typeof body.average, 'number');
+    assert.ok(body.average >= 1 && body.average <= 5);
+  }
+});
+
+test('GET /api/phrases/ratings/average reflete avaliação inserida', async () => {
+  await fetch(`${BASE}/api/phrases/ratings`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ phrase: 'Frase para teste de média', phraseType: 'motivational', rating: 5 }),
+  });
+
+  const res = await fetch(`${BASE}/api/phrases/ratings/average`);
+  const body = await res.json();
+  assert.ok(body.average !== null);
+  assert.equal(typeof body.average, 'number');
+});
+
+// ---------------------------------------------------------------------------
 // Módulo history.js
 // ---------------------------------------------------------------------------
 test('history.js — addEntry e getHistory persistem dados', async () => {

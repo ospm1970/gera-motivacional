@@ -101,6 +101,7 @@ const elements = {
   starsSatirical: new FakeElement('starsSatirical'),
   ratingMsgMotivational: new FakeElement('ratingMsgMotivational'),
   ratingMsgSatirical: new FakeElement('ratingMsgSatirical'),
+  'average-rating': new FakeElement('average-rating'),
 };
 
 elements.motivationalForm = new FakeForm('motivationalForm', [elements.word1, elements.word2, elements.word3]);
